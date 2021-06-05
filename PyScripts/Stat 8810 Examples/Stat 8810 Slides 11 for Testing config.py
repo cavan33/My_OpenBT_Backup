@@ -86,18 +86,18 @@ k = 2 # lower k --> more fitting, I think
 # Tree prior
 alpha = 0.95 # Default = 0.95
 beta = 2 # Default = 2
-nc = 50 # (AKA numcut); Default = 100
+nc = 10 # (AKA numcut); Default = 100
 
 # MCMC settings
-N = 500 # (AKA ndpost); Default = 1000
-burn = 50 # (AKA nskip); Default = 100
-nadapt = 500 # Default = 1000
+N = 400 # (AKA ndpost); Default = 1000
+burn = 10 # (AKA nskip); Default = 100
+nadapt = 400 # Default = 1000
 tc = 4 # Default = 2
 ntree = 1 # (AKA m); Default = 1
 ntreeh = 1 # Default = 1
 
 # For plotting:
-npreds = 50 # Default = 100
+npreds = 30 # Default = 100
 fig = plt.figure(figsize=(10,5.5))
 plt.rcParams['axes.labelsize'] = 18; plt.rcParams['axes.titlesize'] = 22;
 plt.rcParams['xtick.labelsize'] = 16; plt.rcParams['ytick.labelsize'] = 16;
@@ -141,8 +141,12 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
                npreds=npreds, fig=fig, path=path, fname=fname)
 # plt.clf()
 
+fitv = m.vartivity()
+
+
+
 """
-# Old way to get mmean(s) and smean(s):
+# Archive (just in case): Old way to get mmean(s) and smean(s):
      mtemp = np.empty(npreds) # temp array to get mmean; this is also = fitp
      stemp = np.empty(npreds) # temp array to get smean
      for i in range(npreds):
