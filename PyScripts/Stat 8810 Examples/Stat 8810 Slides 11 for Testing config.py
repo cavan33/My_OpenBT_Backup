@@ -89,9 +89,9 @@ beta = 2 # Default = 2
 nc = 10 # (AKA numcut); Default = 100
 
 # MCMC settings
-N = 400 # (AKA ndpost); Default = 1000
+N = 300 # (AKA ndpost); Default = 1000
 burn = 10 # (AKA nskip); Default = 100
-nadapt = 400 # Default = 1000
+nadapt = 300 # Default = 1000
 tc = 4 # Default = 2
 ntree = 1 # (AKA m); Default = 1
 ntreeh = 1 # Default = 1
@@ -102,7 +102,7 @@ fig = plt.figure(figsize=(10,5.5))
 plt.rcParams['axes.labelsize'] = 18; plt.rcParams['axes.titlesize'] = 22;
 plt.rcParams['xtick.labelsize'] = 16; plt.rcParams['ytick.labelsize'] = 16;
 path = 'Documents/OpenBT/PyScripts/Plots/' # Will be different for your filesystem
-fname = 'Slides11_testing.png'
+fname = 'Slides11_testing_config.png'
 #---------------------------------------------------------------------------------------
 def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree,
                  ntreeh, k, overallsd, overallnu, npreds, fig, path, fname):

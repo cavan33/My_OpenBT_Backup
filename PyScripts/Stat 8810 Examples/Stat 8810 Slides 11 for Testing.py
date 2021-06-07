@@ -78,9 +78,9 @@ y = np.matmul(L,u)                                         # n x 1
 # Now, set up the fit:
 # Set values to be used in the fitting/predicting:
 # Variance and mean priors
-overallsd = 0.1 # (AKA shat) # in reality , it's lambdatrue^2?
+shat = 0.1 # (AKA shat) # in reality , it's lambdatrue^2?
 # lower shat --> more fitting, I think
-overallnu = 3
+nu = 3
 k = 2 # lower k --> more fitting, I think
 
 # Tree prior
@@ -102,7 +102,7 @@ fig = plt.figure(figsize=(10,5.5))
 plt.rcParams['axes.labelsize'] = 18; plt.rcParams['axes.titlesize'] = 22;
 plt.rcParams['xtick.labelsize'] = 16; plt.rcParams['ytick.labelsize'] = 16;
 path = 'Documents/OpenBT/PyScripts/Plots/' # Will be different for your filesystem
-fname = 'Slides11.png'
+fname = 'Slides11_testing.png'
 #---------------------------------------------------------------------------------------
 def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree,
                  ntreeh, k, overallsd, overallnu, npreds, fig, path, fname):
@@ -141,6 +141,25 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
 # Fit BART
 (plot, fit, fitp, m) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=ntree,
-               ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=overallnu,
+               ntreeh=ntreeh, k=k, overallsd=shat, overallnu=nu,
                npreds=npreds, fig=fig, path=path, fname=fname)
 # plt.clf()
+
+fitv = m.vartivity() # Attributes are stored with m, not fitv
+
+
+
+"""
+# Archive (just in case): Old way to get mmean(s) and smean(s):
+     mtemp = np.empty(npreds) # temp array to get mmean; this is also = fitp
+     stemp = np.empty(npreds) # temp array to get smean
+     for i in range(npreds):
+          mtemp[i] = np.mean(m.mpreds[i,:])
+          stemp[i] = np.mean(m.spreds[i,:]) # Had to transpose spreds in the openbt file because mpreds and spreds were opposite shapes
+          ax.plot(preds, m.mpreds[:,i],color="gray", linewidth=1, alpha = 0.14)
+     mmean = np.mean(mtemp) # Not needed, but this is the overall predicted mean of the data
+     smean = np.mean(stemp) # Overall predicted SD of the data
+     print(mtemp); print(mtemp.shape)
+     print(stemp); print(stemp.shape)
+     print(mmean); print(smean)
+"""

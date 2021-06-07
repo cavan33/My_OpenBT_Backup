@@ -128,14 +128,18 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
      # Make the full plot with the gray lines: (mmeans and smeans are now returned by m.predict()!)
      ax.plot(preds, m.mmeans - 1.96 * m.smean, color='black', linewidth=0.8)
      ax.plot(preds, m.mmeans + 1.96 * m.smean, color='black', linewidth=0.8)
+     if (ndpost < npreds):
+          print('Number of posterior draws (ndpost) are less than the number of', 
+                'x-values to predict. This is not recommended.')
+          npreds = ndpost
      for i in range(npreds):
           ax.plot(preds, m.mpreds[:,i],color="gray", linewidth=1, alpha = 0.20)
      plt.savefig(f'{path}{fname}')
-     return((fig, m)) # ^ Returns the plot and the instance of the class
+     return((fig, fit, fitp, m)) # Returns the plot, fit results, and the instance of the class
 """
 #---------------------------------------------------------------------------------------
 # Fit BART
-(plot1, m1) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot1, fit1, fitp1, m1) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=ntree,
                ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=overallnu,
                npreds=npreds, fig=fig, path=path, fname='Slides 13-1.png')
@@ -143,7 +147,7 @@ plt.clf()
 
 # Try m=10 trees
 m=10
-(plot2, m2) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot2, fit2, fitp2, m2) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=m,
                ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=overallnu,
                npreds=npreds, fig=fig, path=path, fname='Slides 13-2.png')
@@ -151,7 +155,7 @@ plt.clf()
 
 # Try m=20 trees
 m=20
-(plot3, m3) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot3, fit3, fitp3, m3) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=m,
                ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=overallnu,
                npreds=npreds, fig=fig, path=path, fname='Slides 13-3.png')
@@ -159,7 +163,7 @@ plt.clf()
 
 # Try m=100 trees
 m=100
-(plot4, m4) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot4, fit4, fitp4, m4) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=m,
                ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=overallnu,
                npreds=npreds, fig=fig, path=path, fname='Slides 13-4.png')
@@ -167,7 +171,7 @@ plt.clf()
 
 # Try m=200 trees, the recommended default
 m=200
-(plot5, m5) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot5, fit5, fitp5, m5) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=m,
                ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=overallnu,
                npreds=npreds, fig=fig, path=path, fname='Slides 13-5.png')
@@ -177,7 +181,7 @@ plt.clf()
 m=200
 # And k=1
 k=1
-(plot6, m6) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot6, fit6, fitp6, m6) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=m,
                ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=overallnu,
                npreds=npreds, fig=fig, path=path, fname='Slides 13-6.png')
@@ -192,7 +196,7 @@ m=200
 k=1
 # And nu=3, q=.99
 nu=3
-(plot7, m7) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot7, fit7, fitp7, m7) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=m,
                ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=nu,
                npreds=npreds, fig=fig, path=path, fname='Slides 13-7.png')
@@ -205,7 +209,7 @@ m=200
 k=1
 # And nu=2, q=.99
 nu=2
-(plot8, m8) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot8, fit8, fitp8, m8) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=m,
                ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=nu,
                npreds=npreds, fig=fig, path=path, fname='Slides 13-8.png')
@@ -218,7 +222,7 @@ m=200
 k=1
 # And nu=1, q=.99
 nu=1
-(plot9, m9) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot9, fit9, fitp9, m9) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=m,
                ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=nu,
                npreds=npreds, fig=fig, path=path, fname='Slides 13-9.png')
@@ -233,7 +237,7 @@ k=1
 nu=1
 # And numcuts=1000
 nc=1000
-(plot10, m10) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot10, fit10, fitp10, m10) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=m,
                ntreeh=ntreeh, k=k, overallsd=overallsd, overallnu=nu,
                npreds=npreds, fig=fig, path=path, fname='Slides 13-10.png')
@@ -264,8 +268,8 @@ nc=1000
 m11 = OPENBT(model="bart", ndpost=N, nskip=burn, power=beta, base=alpha,
            tc=tc, numcut=nc, ntree=m, ntreeh=ntreeh, k=k,
            overallsd=shat, overallnu=nu)
-fit = m11.fit(x,y)
-fitp = m11.predict(preds)
+fit11 = m11.fit(x,y)
+fitp11 = m11.predict(preds)
 
 # Plot CO2plume posterior samples of sigma
 fig = plt.figure(figsize=(10,5.5))
@@ -289,7 +293,6 @@ ax.scatter(co2plume[:,0], co2plume[:,1], co2plume[:,2], color='black')
 ax.set_xlabel('Stack_inerts'); ax.set_ylabel('Time'); ax.set_zlabel('CO2')
 plt.savefig(f'{path}co2plume_orig.png')
 
-# Calculate the CO2 mmeans and smeans arrays
 a = np.arange(0, 1.01, 1/19); b = a;
 A, B = np.meshgrid(a, b)
 ax.plot_surface(A, B, m11.mmeans.reshape(20,20), color='black')
