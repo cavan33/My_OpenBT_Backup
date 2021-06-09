@@ -37,7 +37,6 @@ library(Ropenbt)
 # Variance prior
 shat=0.1 # sd(y) # lower shat leads to more fitting, I think
 nu=3
-q=0.90
 
 # Mean prior
 k=2 # lower k leads to more fitting, I think
@@ -57,14 +56,14 @@ fit=openbt(design, y, tc=4, pbd=c(0.7,0.0), overallsd=shat, overallnu = nu,
 str(fit)
 
 # Save fit:
-openbt.save(fit,"slides11fit")
+openbt.save(fit,"slides11fit_testv")
 
 # Load fitted model to a new object (just for learning/testing purposes):
-fit2=openbt.load("slides11fit")
+# fit2=openbt.load("slides11fit_testv")
 
 # Calculate predictions:
 preds=matrix(seq(0,1,length=100),ncol=1) # This is the x_test matrix
-fitp=predict.openbt(fit2, x.test=preds, tc=4)
+fitp=predict.openbt(fit, x.test=preds, tc=4)
 str(fitp)
 
 # Easy part of the plot:

@@ -94,9 +94,6 @@ tc = 4 # Default = 2
 ntree = 1 # Default = 1
 ntreeh = 1 # Default = 1
 
-# For plotting:
-npreds = 100 # Default = 100
-
 #----------------------------------------------------------------------------------
 # Example - the CO2 Plume data from Assignment 3
 # Fit the model

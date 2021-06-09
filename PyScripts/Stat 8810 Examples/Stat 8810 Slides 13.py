@@ -110,7 +110,7 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
                 tc=tc, numcut=numcut, ntree=ntree, ntreeh=ntreeh, k=k,
                 overallsd=overallsd, overallnu=overallnu)
      fit = m.fit(design,y)
-     preds = np.arange(0, (1 + 1/npreds), 1/(npreds-1)).reshape(npreds,1)
+     preds = np.arange(0, (1 + 1/npreds), 1/(npreds-1)).reshape(npreds, 1)
      fitp = m.predict(preds)
 
      # Plot predictions:
@@ -133,7 +133,7 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
                 'x-values to predict. This is not recommended.')
           npreds = ndpost
      for i in range(npreds):
-          ax.plot(preds, m.mpreds[:,i],color="gray", linewidth=1, alpha = 0.20)
+          ax.plot(preds, m.mdraws[i, :],color="gray", linewidth=1, alpha = 0.20)
      plt.savefig(f'{path}{fname}')
      return((fig, fit, fitp, m)) # Returns the plot, fit results, and the instance of the class
 """
@@ -274,7 +274,7 @@ fitp11 = m11.predict(preds)
 # Plot CO2plume posterior samples of sigma
 fig = plt.figure(figsize=(10,5.5))
 ax = fig.add_subplot(111)
-ax.plot(np.transpose(m11.spreds), color='black', linewidth=0.15)
+ax.plot(np.transpose(m11.sdraws), color='black', linewidth=0.15)
 ax.set_xlabel('Iteration'); ax.set_ylabel('$\sigma$')
 ax.set_title('sdraws during Python CO2Plume fitp');
 plt.savefig(f'{path}co2plume_sdraws.png')

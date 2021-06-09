@@ -90,8 +90,8 @@ nc = 100 # (AKA numcut); Default = 100
 
 # MCMC settings
 N = 1000 # (AKA ndpost); Default = 1000
-burn = 1000 # (AKA nskip); Default = 100
-nadapt = 1000 # Default = 1000
+burn = 100 # (AKA nskip); Default = 100
+nadapt = 100 # Default = 1000
 tc = 4 # Default = 2
 ntree = 1 # (AKA m); Default = 1
 ntreeh = 1 # Default = 1
@@ -110,7 +110,7 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
                 tc=tc, numcut=numcut, ntree=ntree, ntreeh=ntreeh, k=k,
                 overallsd=overallsd, overallnu=overallnu)
      fit = m.fit(design,y)
-     preds = np.arange(0, (1 + 1/npreds), 1/(npreds-1)).reshape(npreds,1)
+     preds = np.arange(0, (1 + 1/npreds), 1/(npreds-1)).reshape(npreds, 1)
      fitp = m.predict(preds)
 
      # Plot predictions:
@@ -133,7 +133,7 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
                 'x-values to predict. This is not recommended.')
           npreds = ndpost
      for i in range(npreds):
-          ax.plot(preds, m.mpreds[:,i],color="gray", linewidth=1, alpha = 0.20)
+          ax.plot(preds, m.mdraws[i, :],color="gray", linewidth=1, alpha = 0.20)
      plt.savefig(f'{path}{fname}')
      return((fig, fit, fitp, m)) # Returns the plot, fit results, and the instance of the class
 
@@ -146,20 +146,3 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
 # plt.clf()
 
 fitv = m.vartivity() # Attributes are stored with m, not fitv
-
-
-
-"""
-# Archive (just in case): Old way to get mmean(s) and smean(s):
-     mtemp = np.empty(npreds) # temp array to get mmean; this is also = fitp
-     stemp = np.empty(npreds) # temp array to get smean
-     for i in range(npreds):
-          mtemp[i] = np.mean(m.mpreds[i,:])
-          stemp[i] = np.mean(m.spreds[i,:]) # Had to transpose spreds in the openbt file because mpreds and spreds were opposite shapes
-          ax.plot(preds, m.mpreds[:,i],color="gray", linewidth=1, alpha = 0.14)
-     mmean = np.mean(mtemp) # Not needed, but this is the overall predicted mean of the data
-     smean = np.mean(stemp) # Overall predicted SD of the data
-     print(mtemp); print(mtemp.shape)
-     print(stemp); print(stemp.shape)
-     print(mmean); print(smean)
-"""

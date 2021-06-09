@@ -110,7 +110,7 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
                 tc=tc, numcut=numcut, ntree=ntree, ntreeh=ntreeh, k=k,
                 overallsd=overallsd, overallnu=overallnu)
      fit = m.fit(design,y)
-     preds = np.arange(0, (1 + 1/npreds), 1/(npreds-1)).reshape(npreds,1)
+     preds = np.arange(0, (1 + 1/npreds), 1/(npreds-1)).reshape(npreds, 1)
      fitp = m.predict(preds)
 
      # Plot predictions:
@@ -133,7 +133,7 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
                 'x-values to predict. This is not recommended.')
           npreds = ndpost
      for i in range(npreds):
-          ax.plot(preds, m.mpreds[:,i],color="gray", linewidth=1, alpha = 0.20)
+          ax.plot(preds, m.mdraws[i, :],color="gray", linewidth=1, alpha = 0.20)
      plt.savefig(f'{path}{fname}')
      return((fig, fit, fitp, m)) # Returns the plot, fit results, and the instance of the class
 
