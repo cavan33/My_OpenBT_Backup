@@ -112,4 +112,5 @@ m11 = OPENBT(model="bart", ndpost=N, nskip=burn, power=beta, base=alpha,
 fit = m11.fit(x,y)
 fitp = m11.predict(preds)
 
-fitv = m11.vartivity()
+# fitv = m11.vartivity()
+fits = m11.sobol(cmdopt = 'MPI')

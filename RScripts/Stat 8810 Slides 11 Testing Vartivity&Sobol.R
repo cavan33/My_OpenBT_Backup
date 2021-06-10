@@ -83,4 +83,5 @@ lines(preds,fitp$mmean+1.96*fitp$smean,lwd=0.75,col="black")
 lines(preds,fitp$mmean,lwd=2,col="blue")
 points(design,y,pch=20,col="red")
 
-fitv = vartivity.openbt(fit)
+# fitv = vartivity.openbt(fit)
+fits = sobol.openbt(fit)

@@ -90,8 +90,7 @@ nc = 100 # (AKA numcut); Default = 100
 
 # MCMC settings
 N = 1000 # (AKA ndpost); Default = 1000
-burn = 100 # (AKA nskip); Default = 100
-nadapt = 100 # Default = 1000
+burn = 1000 # (AKA nskip); Default = 100
 tc = 4 # Default = 2
 ntree = 1 # (AKA m); Default = 1
 ntreeh = 1 # Default = 1
@@ -145,4 +144,5 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
                npreds=npreds, fig=fig, path=path, fname=fname)
 # plt.clf()
 
-fitv = m.vartivity() # Attributes are stored with m, not fitv
+# fitv = m.vartivity()
+fits = m.sobol(cmdopt = 'MPI')
