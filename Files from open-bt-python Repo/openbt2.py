@@ -59,11 +59,10 @@ class OPENBT(BaseEstimator):
         print("Running model...")
         self._run_model()
         
-        # return attributes to be saved as a separate fit object:
-        res = {} # Missing the influence attribute from the R code (what is it??)
-        self.minx = int(np.floor(np.min(self.xi[0])))
-        self.maxx = int(np.ceil(np.max(self.xi[0])))
-        
+        # New: Return attributes to be saved as a separate fit object:
+        res = {} # Missing the influence attribute from the R code (skip for now)
+        self.maxx = np.ceil(np.max(self.X_train, axis=1))
+        self.minx = np.floor(np.min(self.X_train, axis=1))
         for key in self.__dict__.keys():
              res[key] = self.__dict__[key]
         res['minx'] = self.minx; res['maxx'] = self.maxx;
@@ -93,6 +92,7 @@ class OPENBT(BaseEstimator):
             self.__dict__[arg] = self.__dict__[arg][0]
         except:
             self.__dict__[arg + "h"] = self.__dict__[arg]
+        # ^ Right now it seems to do the 'except' step for all args it's used with, FYI
 
 
     def _define_params(self):
@@ -121,7 +121,7 @@ class OPENBT(BaseEstimator):
              if self.modeltype in [1, 4, 5]:
                   self.overallsd = np.std(self.y_train)
              else: self.overallsd = 1
-        self.overalllambda = np.square(self.overallsd)
+        self.overalllambda = self.overallsd**2
         if not(isinstance(self.overallnu, (int,float))): # If it wasn't user-inputted
              if self.modeltype in [1, 4, 5, 6]:
                   self.overallnu = 10
@@ -228,6 +228,7 @@ class OPENBT(BaseEstimator):
                 pfile.write(str(param)+"\n")
         self._run_model(train=False)
         self._read_in_preds()
+        # New: make things a bit more like R, and save attributes to a fit object:
         res = {}
         res['mdraws'] = self.mdraws; res['sdraws'] = self.sdraws;
         res['mmean'] = self.mmean; res['smean'] = self.smean;
@@ -289,7 +290,7 @@ class OPENBT(BaseEstimator):
        
           
 #-----------------------------------------------------------------------------
-# My functions:
+# Clark's functions (made from scratch, not edited from Zoltan's version):
     def _read_in_vartivity(self, q_lower, q_upper):
         vdraws_files = sorted(list(self.fpath.glob("model.vdraws")))
         self.vdraws = np.array([])
@@ -394,12 +395,16 @@ class OPENBT(BaseEstimator):
         res['vdraws_sd'] = self.vdraws_sd; res['vdrawsh_sd'] = self.vdrawsh_sd; 
         res['vdraws_5'] = self.vdraws_5; res['vdrawsh_5'] = self.vdrawsh_5; 
         res['vdraws_lower'] = self.vdraws_lower; res['vdrawsh_lower'] = self.vdrawsh_lower; 
-        res['vdraws_upper'] = self.vdraws_upper; res['vdrawsh_5'] = self.vdrawsh_upper; 
+        res['vdraws_upper'] = self.vdraws_upper; res['vdrawsh_upper'] = self.vdrawsh_upper; 
         res['q_lower'] = self.q_lower; res['q_upper'] = self.q_upper;
         res['modeltype'] = self.modeltype
         return res
    
     
+   
+     
+   
+     
     def _read_in_sobol(self, q_lower, q_upper):
         sobol_draws_files = sorted(list(self.fpath.glob("model.sobol*")))
         # print(sobol_draws_files)
@@ -412,16 +417,20 @@ class OPENBT(BaseEstimator):
         labs = np.empty(len(labs_temp), dtype = '<U4')
         for i in range(len(labs_temp)):
              labs[i] =  ', '.join(map(str, labs_temp[i]))
-        # print(self.so_draws); print(self.so_draws.shape)
+        # print(self.so_draws.shape)
         nrow = self.so_draws.shape[0]; ncol = self.so_draws.shape[1]
         draws = self.so_draws; p = self.p # ^ Shorthand to make the next lines shorter
-        self.vidraws = draws[:, 1:p]
-        self.vijdraws = draws[:, (p+1):int((p+p*(p-1)/2))]
-        self.tvidraws = draws[:, (ncol-p):(ncol-1)]
-        self.vdraws = draws[:, ncol]
+        # All this is the same as R, but the beginning of the indices are shifted by
+        # 1 since Python starts at index 0. Remember, Python omits the column at the 
+        # end of the index, so the end index is actually the same as R!
+        self.vidraws = draws[:, 0:p] # Columns 1-2 for p = 2
+        self.vijdraws = draws[:, p:int((p+p*(p-1)/2))] # Column 3 for p = 2
+        self.tvidraws = draws[:, (ncol-1-p):(ncol-1)] # Columns 4 and 5 for p = 2
+        self.vdraws = draws[:, ncol-1].reshape(self.ndpost, 1) # Column 6 for p = 2 (aLways last column)
         self.sidraws = self.vidraws / self.vdraws
         self.sijdraws = self.vijdraws / self.vdraws
         self.tsidraws = self.tvidraws / self.vdraws
+        # ^ Colnames? If so, likely use list(range(1, p+1))
         # Compute a ton of sobol statistics:
         self.msi = np.empty(self.p)
         self.msi_sd = np.empty(self.p)
@@ -442,66 +451,65 @@ class OPENBT(BaseEstimator):
              self.si_5 = self.si_5[0]
              self.si_lower = self.si_lower[0]
              self.si_upper = self.si_upper[0]
-        """
-        names(res$msi)=paste("S",1:p,sep="")
-        names(res$msi.sd)=paste("S",1:p,sep="")
-        names(res$si.5)=paste("S",1:p,sep="")
-        names(res$si.lower)=paste("S",1:p,sep="")
-        names(res$si.upper)=paste("S",1:p,sep="") # Again, implement if pandas are implemented
-        """
-        
+        # ^ Names?    
         # Do this again for i,j:
         self.msij = np.empty(self.p)
-        self.msij_sd = np.empty(self.p)
+        self.sij_sd = np.empty(self.p)
         self.sij_5 = np.empty(self.p)
         self.sij_lower = np.empty(self.p)
         self.sij_upper = np.empty(self.p)
         for j in range(len(self.sijdraws[0])): # (should = self.p?)
              self.msij[j] = np.mean(self.sijdraws[:, j])
-             self.msij_sd[j] = np.std(self.sijdraws[:, j])
+             self.sij_sd[j] = np.std(self.sijdraws[:, j])
              self.sij_5[j] = np.percentile(self.sijdraws[:, j], 0.50)
              self.sij_lower[j] = np.percentile(self.sijdraws[:, j], self.q_lower)
              self.sij_upper[j] = np.percentile(self.sijdraws[:, j], self.q_upper)
              
         if (len(self.sijdraws[0]) == 1): #  Make the output just a double, not a 2D array
              self.msij = self.msij[0]
-             self.msij_sd = self.msij_sd[0]
+             self.sij_sd = self.sij_sd[0]
              self.sij_5 = self.sij_5[0]
              self.sij_lower = self.sij_lower[0]
              self.sij_upper = self.sij_upper[0]   
-             
+        # ^ Names?     
         # Do this again for t:
         self.mtsi = np.empty(self.p)
-        self.mtsi_sd = np.empty(self.p)
+        self.tsi_sd = np.empty(self.p)
         self.tsi_5 = np.empty(self.p)
         self.tsi_lower = np.empty(self.p)
         self.tsi_upper = np.empty(self.p)
         for j in range(len(self.tsidraws[0])): # (should = self.p?)
              self.mtsi[j] = np.mean(self.tsidraws[:, j])
-             self.mtsi_sd[j] = np.std(self.tsidraws[:, j])
+             self.tsi_sd[j] = np.std(self.tsidraws[:, j])
              self.tsi_5[j] = np.percentile(self.tsidraws[:, j], 0.50)
              self.tsi_lower[j] = np.percentile(self.tsidraws[:, j], self.q_lower)
              self.tsi_upper[j] = np.percentile(self.tsidraws[:, j], self.q_upper)
              
         if (len(self.tsidraws[0]) == 1): #  Make the output just a double, not a 2D array
              self.mtsi = self.mtsi[0]
-             self.mtsi_sd = self.mtsi_sd[0]
+             self.tsi_sd = self.tsi_sd[0]
              self.tsi_5 = self.tsi_5[0]
              self.tsi_lower = self.tsi_lower[0]
              self.tsi_upper = self.tsi_upper[0] 
-             
-             
+        # ^ Names?     
+       
+        
     def sobol(self, cmdopt = 'serial', q_lower=0.025, q_upper=0.975):  
         """Calculate Sobol indices (more accurate than vartivity)
         """
-        # Write to config file:
+        if (self.p <= 1 or (self.p - int(self.p) != 0)):
+             sys.exit('p (number of variables) must be 2 or more, and a whole number')
+        # Write to config file:  
         sobol_params = [self.modelname, self.xiroot, self.ndpost, self.ntree,
                             self.ntreeh, self.p, self.minx, self.maxx, self.tc]
         self.configfile = Path(self.fpath / "config.sobol")
-        # print(sobol_params)
+        print(self.fpath) #print(sobol_params); 
         with self.configfile.open("w") as tfile:
             for param in sobol_params:
-                tfile.write(str(param)+"\n")
+                if type(param) != str and type(param) != int: # Makes minx & maxx into writable quantities, not arrays
+                     for item in param:
+                          tfile.write(str(item)+"\n")
+                else: tfile.write(str(param)+"\n")
         # Run sobol program: optional to use MPI.
         cmd = "openbtsobol"
         if(cmdopt == 'serial'):
@@ -513,23 +521,27 @@ class OPENBT(BaseEstimator):
         else:
              sys.exit('Invalid cmdopt (command option)')
         # print(sp)
-        # Read in result (and set extra attributes like --- etc.):
+        # Read in result (and set a bunch of extra attributes):
         self._read_in_sobol(q_lower, q_upper)
+        
         # Compile all the new attributes into something that will be saved as "fits" when the function is called:
         res = {}
         # colnames(res$vidraws)=paste("V",1:p,sep="") # Implement this (and all the other colnames) if you use pandas
         # Set all of the self variables/attributes to res here:
-        res['vidraws'] = self.vidraws;
-        
-        
-        
+        res['vidraws'] = self.vidraws; res['vijdraws'] = self.vijdraws;
+        res['tvidraws'] = self.tvidraws; res['vdraws'] = self.vdraws;
+        res['sidraws'] = self.sidraws; res['sijdraws'] = self.sijdraws;
+        res['tsidraws'] = self.tsidraws;
+        res['msi'] = self.msi; res['msi_sd'] = self.msi_sd; res['si_5'] = self.si_5;
+        res['si_lower'] = self.si_lower; res['si_upper'] = self.si_upper;
+        res['msij'] = self.msij; res['sij_sd'] = self.sij_sd; res['sij_5'] = self.sij_5;
+        res['sij_lower'] = self.sij_lower; res['sij_upper'] = self.sij_upper;
+        res['mtsi'] = self.mtsi; res['tsi_sd'] = self.tsi_sd; res['tsi_5'] = self.tsi_5;
+        res['tsi_lower'] = self.tsi_lower; res['tsi_upper'] = self.tsi_upper;
         res['q_lower'] = self.q_lower; res['q_upper'] = self.q_upper;
         res['modeltype'] = self.modeltype; res['so_draws'] = self.so_draws
         return res
    
-
-
-
 
 
 # Scratch lines:

@@ -5,11 +5,10 @@ Created on Mon Jun  7 14:17:11 2021
 
 @author: clark
 """
-
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import datasets, svm
-# Janky importing from openbt-python repo (you'll have to change this for your own machine):
+# Janky importing from openbt-python repo below: (you'll have to change this for your own machine):
 import sys
 sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
 from openbt2 import OPENBT # I made changes to openbt.py & called it openbt2
@@ -52,7 +51,6 @@ def rhogeodacecormat(geoD,rho,alpha=2):
           # ^ This is different notation than in R because my geoD array isn't a dataframe
      return(R)
 
-
 # Generate response (data):
 np.random.seed(88)
 n = 10; rhotrue = 0.2; lambdatrue = 1
@@ -84,33 +82,33 @@ k = 2 # lower k --> more fitting, I think
 # Tree prior
 alpha = 0.95 # Default = 0.95
 beta = 2 # Default = 2
-nc = 10 # (AKA numcut); Default = 100
+nc = 30 # (AKA numcut); Default = 100
 
 # MCMC settings
-N = 300 # (AKA ndpost); Default = 1000
-burn = 10 # (AKA nskip); Default = 100
+N = 700 # (AKA ndpost); Default = 1000
+burn = 30 # (AKA nskip); Default = 100
 nadapt = 300 # Default = 1000
 tc = 4 # Default = 2
 ntree = 1 # Default = 1
 ntreeh = 1 # Default = 1
-
+npred_arr = 25
 #----------------------------------------------------------------------------------
 # Example - the CO2 Plume data from Assignment 3
 # Fit the model
 co2plume = np.loadtxt('Documents/OpenBT/PyScripts/newco2plume.txt', skiprows=1)
-# Kinda cheated, and made it the .dat file into a.txt file using R
+# Kinda cheated, and made the tricky .dat file into a .txt file using R
 x = co2plume[:,0:2] # Not including the 3rd column, btw
 y = co2plume[:,2]
-preds = np.array([(x, y) for x in range(20) for y in range(20)])/19
+preds = np.array([(x, y) for x in range(npred_arr) for y in range(npred_arr)])/(npred_arr-1)
 preds = np.flip(preds,1) # flipped columns to match the preds in the R code
 
 # Do this one manually, since it's a different setup than what I wrote the
 # function for:
-m11 = OPENBT(model="bart", ndpost=N, nskip=burn, power=beta, base=alpha,
-           tc=tc, numcut=nc, ntree=ntree, ntreeh=ntreeh, k=k,
-           overallsd=overallsd, overallnu=overallnu)
-fit = m11.fit(x,y)
-fitp = m11.predict(preds)
+m13 = OPENBT(model="bart", ndpost=N, nskip=burn, nadapt=nadapt, power=beta,
+             base=alpha, tc=tc, numcut=nc, ntree=ntree, ntreeh=ntreeh, k=k,
+             overallsd=overallsd, overallnu=overallnu)
+fit13 = m13.fit(x,y)
+fitp13 = m13.predict(preds)
 
-# fitv = m11.vartivity()
-fits = m11.sobol(cmdopt = 'MPI')
+fitv13 = m13.vartivity()
+fits13 = m13.sobol(cmdopt = 'MPI')

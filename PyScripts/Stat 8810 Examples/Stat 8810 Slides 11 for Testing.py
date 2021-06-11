@@ -138,11 +138,11 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
 
 #---------------------------------------------------------------------------------------
 # Fit BART
-(plot, fit, fitp, m) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
+(plot, fit11, fitp11, m11) = fit_pipeline(design, y, model="bart", ndpost=N, nskip=burn,
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=ntree,
                ntreeh=ntreeh, k=k, overallsd=shat, overallnu=nu,
                npreds=npreds, fig=fig, path=path, fname=fname)
 # plt.clf()
 
-# fitv = m.vartivity()
-fits = m.sobol(cmdopt = 'MPI')
+fitv11 = m11.vartivity()
+# fits (sobol function) doesn't work for this example because p = 1

@@ -11,34 +11,39 @@ plot3d(co2plume)
 # Fit the model
 y=co2plume$co2
 x=co2plume[,1:2]
-preds=as.data.frame(expand.grid(seq(0,1,length=20),
-                                seq(0,1,length=20)))
+npred_arr = 25
+preds=as.data.frame(expand.grid(seq(0,1,length=npred_arr),
+                                seq(0,1,length=npred_arr)))
 colnames(preds)=colnames(x)
-shat=sd(y)
-N = 1000; burn = 1000; alpha = 0.95; beta = 2; #(defaults)
-# Try m=200 trees, the recommended default
-m=200
-# And k=1
-k=1
-# And nu=1, q=.99
-nu=1
-# And numcuts=1000
-nc=1000
-# Do this example (CO2plume) manually, since it's a different setup than what I wrote the
+# For testing, we have small numbers for the parameters:
+overallsd = 0.2; overallnu = 3; k = 2
+alpha = 0.95; beta = 2; nc = 30
+N = 700; burn = 30; nadapt = 300; tc = 4; m = 1
+
+# Do this example (CO2 Plume) manually, since it's a different setup than what I wrote the
 # function for:
-fit11 <- openbt(x, y, tc=4, pbd=c(0.7,0.0), overallsd=shat, overallnu=nu,
+fit13 <- openbt(x, y, tc=tc, pbd=c(0.7,0.0), overallsd=overallsd, overallnu=overallnu,
                 ntreeh=1, ntree=m, k=k, model="bart", power=beta, base=alpha,
                 numcut=nc, ndpost=N, nskip=burn)
-str(fit11)
+str(fit13)
 
 # Calculate predictions:
-fitp11 <- predict.openbt(fit11, x.test=preds, tc=4)
-str(fitp11)
+fitp13 <- predict.openbt(fit11, x.test=preds, tc=4)
+str(fitp13)
 
-fits11 <- sobol.openbt(fit11, tc=4)
+fitv13 <- vartivity.openbt(fit13)
+fits13 <- sobol.openbt(fit13, tc=4)
 
 #----------------------------------------------------------------------------------------
-# Testing/Hard-coding section:
+# Testing/Hard-coding section: 
+# This block goes with CO2Plume Example - trying to find what exactly config.sobol contains
+c(fit13$modelname,fit13$xiroot,
+  paste(fit13$nd),paste(fit13$m),
+  paste(fit13$mh),paste(length(fit13$xicuts)),paste(fit13$minx),
+  paste(fit13$maxx),paste(fit13$tc))
+
+
+
 # Trying to manually run the function to see what "draws" is supposed to look like
 res=list(); tc = 4
 draws=read.table('/tmp/openbtpy_0322h0dp/model.sobol0')

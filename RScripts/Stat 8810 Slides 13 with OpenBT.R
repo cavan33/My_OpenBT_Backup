@@ -254,7 +254,6 @@ openbt.save(fit11,"slides13co2fit")
 fitp11 <- predict.openbt(fit11, x.test=preds, tc=4)
 str(fitp11)
 
-
 #--------------------------------------------------------------------
 
 # Plot posterior samples of sigma
@@ -269,8 +268,6 @@ ysd=fitp11$smean
 persp3d(x=seq(0,1,length=20),y=seq(0,1,length=20),z=matrix(ym,20,20),
         col="grey",xlab="stack_inerts",ylab="time",zlab="CO2")
 plot3d(co2plume,add=TRUE)
-
-
 
 
 # Plot fit and uncertainties

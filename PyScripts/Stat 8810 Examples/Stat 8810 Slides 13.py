@@ -11,7 +11,7 @@ to how I wanted to set some more parameters.
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import datasets, svm
-# Janky importing from openbt-python repo (you'll have to change this for your own machine):
+# Janky importing from openbt-python repo below: (you'll have to change this for your own machine):
 import sys
 sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
 from openbt2 import OPENBT # I made changes to openbt.py & called it openbt2
@@ -95,7 +95,7 @@ nadapt = 1000 # Default = 1000
 tc = 4 # Default = 2
 ntree = 1 # Default = 1
 ntreeh = 1 # Default = 1
-
+npred_arr = 25
 # For plotting:
 npreds = 100 # Default = 100
 fig = plt.figure(figsize=(10,5.5))
@@ -104,10 +104,10 @@ plt.rcParams['xtick.labelsize'] = 16; plt.rcParams['ytick.labelsize'] = 16;
 path = 'Documents/OpenBT/PyScripts/Plots/' # Will be different for your filesystem
 
 #---------------------------------------------------------------------------------------
-def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree,
+def fit_pipeline(design, y, model, ndpost, nadapt, nskip, power, base, tc, numcut, ntree,
                  ntreeh, k, overallsd, overallnu, npreds, fig, path, fname):
-     m = OPENBT(model=model, ndpost=ndpost, nskip=nskip, power=power, base=base,
-                tc=tc, numcut=numcut, ntree=ntree, ntreeh=ntreeh, k=k,
+     m = OPENBT(model=model, ndpost=ndpost, nadapt = nadapt, nskip=nskip, power=power,
+                base=base, tc=tc, numcut=numcut, ntree=ntree, ntreeh=ntreeh, k=k,
                 overallsd=overallsd, overallnu=overallnu)
      fit = m.fit(design,y)
      preds = np.arange(0, (1 + 1/npreds), 1/(npreds-1)).reshape(npreds, 1)
@@ -247,10 +247,10 @@ plt.clf()
 # Example - the CO2 Plume data from Assignment 3
 # Fit the model
 co2plume = np.loadtxt('Documents/OpenBT/PyScripts/newco2plume.txt', skiprows=1)
-# Kinda cheated, and made it the .dat file into a.txt file using R
+# Kinda cheated, and made the tricky .dat file into a .txt file using R
 x = co2plume[:,0:2] # Not including the 3rd column, btw
 y = co2plume[:,2]
-preds = np.array([(x, y) for x in range(20) for y in range(20)])/19
+preds = np.array([(x, y) for x in range(npred_arr) for y in range(npred_arr)])/(npred_arr-1)
 preds = np.flip(preds,1) # flipped columns to match the preds in the R code
 
 shat = np.std(y)
@@ -265,16 +265,16 @@ nc=1000
 
 # Do this one manually, since it's a different setup than what I wrote the
 # function for:
-m11 = OPENBT(model="bart", ndpost=N, nskip=burn, power=beta, base=alpha,
-           tc=tc, numcut=nc, ntree=m, ntreeh=ntreeh, k=k,
-           overallsd=shat, overallnu=nu)
+m11 = OPENBT(model="bart", ndpost=N, nadapt = nadapt, nskip=burn, power=beta,
+             base=alpha, tc=tc, numcut=nc, ntree=m, ntreeh=ntreeh, k=k,
+             overallsd=shat, overallnu=nu)
 fit11 = m11.fit(x,y)
 fitp11 = m11.predict(preds)
 
 # Plot CO2plume posterior samples of sigma
 fig = plt.figure(figsize=(10,5.5))
 ax = fig.add_subplot(111)
-ax.plot(np.transpose(m11.sdraws), color='black', linewidth=0.15)
+ax.plot(m11.sdraws, color='black', linewidth=0.15)
 ax.set_xlabel('Iteration'); ax.set_ylabel('$\sigma$')
 ax.set_title('sdraws during Python CO2Plume fitp');
 plt.savefig(f'{path}co2plume_sdraws.png')
@@ -293,13 +293,13 @@ ax.scatter(co2plume[:,0], co2plume[:,1], co2plume[:,2], color='black')
 ax.set_xlabel('Stack_inerts'); ax.set_ylabel('Time'); ax.set_zlabel('CO2')
 plt.savefig(f'{path}co2plume_orig.png')
 
-a = np.arange(0, 1.01, 1/19); b = a;
+a = np.arange(0, 1.0001, 1/(npred_arr-1)); b = a;
 A, B = np.meshgrid(a, b)
-ax.plot_surface(A, B, m11.mmeans.reshape(20,20), color='black')
+ax.plot_surface(A, B, m11.mmeans.reshape(npred_arr,npred_arr), color='black')
 ax.set_xlabel('Stack_inerts'); ax.set_ylabel('Time'); ax.set_zlabel('CO2')
 plt.savefig(f'{path}co2plume_fit.png')
 
 # Add the uncertainties (keep the surface from above, too):
-ax.plot_surface(A, B, (m11.mmeans + 1.96 * m11.smean).reshape(20,20), color='green')
-ax.plot_surface(A, B, (m11.mmeans - 1.96 * m11.smean).reshape(20,20), color='green')
+ax.plot_surface(A, B, (m11.mmeans + 1.96 * m11.smean).reshape(npred_arr,npred_arr), color='green')
+ax.plot_surface(A, B, (m11.mmeans - 1.96 * m11.smean).reshape(npred_arr,npred_arr), color='green')
 plt.savefig(f'{path}co2plume_fitp.png')
