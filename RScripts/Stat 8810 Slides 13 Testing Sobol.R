@@ -15,6 +15,7 @@ preds=as.data.frame(expand.grid(seq(0,1,length=20),
                                 seq(0,1,length=20)))
 colnames(preds)=colnames(x)
 shat=sd(y)
+N = 1000; burn = 1000; alpha = 0.95; beta = 2; #(defaults)
 # Try m=200 trees, the recommended default
 m=200
 # And k=1
@@ -23,7 +24,7 @@ k=1
 nu=1
 # And numcuts=1000
 nc=1000
-# Do this one manually, since it's a different setup than what I wrote the
+# Do this example (CO2plume) manually, since it's a different setup than what I wrote the
 # function for:
 fit11 <- openbt(x, y, tc=4, pbd=c(0.7,0.0), overallsd=shat, overallnu=nu,
                 ntreeh=1, ntree=m, k=k, model="bart", power=beta, base=alpha,
@@ -44,6 +45,6 @@ draws=read.table('/tmp/openbtpy_0322h0dp/model.sobol0')
 for(i in 2:tc)
   draws=rbind(draws,read.table(paste('/tmp/openbtpy_0322h0dp/model.sobol',i-1,sep="")))
 draws=as.matrix(draws)
-# Trying to figure out what this means:
+# Trying to figure out what this means (complete!):
 p=4
 labs=gsub("\\s+",",",apply(combn(1:p,2),2,function(zz) Reduce(paste,zz)))
