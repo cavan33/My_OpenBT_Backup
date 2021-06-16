@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from sklearn import datasets, svm
 # Janky importing from openbt-python repo below: (you'll have to change this for your own machine):
 import sys
-sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
+sys.path.append("~/Documents/OpenBT/openbt-python") # os.getcwd() to check
 from openbt2 import OPENBT # I made changes to openbt.py & called it openbt2
 
 # Example (Our usual GP realization) originally using BayesTree, 
@@ -123,11 +123,11 @@ def fit_pipeline(design, y, model, ndpost, nadapt, nskip, power, base, tc, numcu
      ax.set_xlabel('Observed'); ax.set_ylabel('Fitted'); ax.set_ylim(-1.5, 1)
      # plt.legend(loc='upper right')
      # Plot the central line: Overall mean predictor
-     ax.plot(preds, m.mmeans, 'b-', linewidth=2)
+     ax.plot(preds, m.mmean, 'b-', linewidth=2)
 
      # Make the full plot with the gray lines: (mmeans and smeans are now returned by m.predict()!)
-     ax.plot(preds, m.mmeans - 1.96 * m.smean, color='black', linewidth=0.8)
-     ax.plot(preds, m.mmeans + 1.96 * m.smean, color='black', linewidth=0.8)
+     ax.plot(preds, m.mmean - 1.96 * m.smean, color='black', linewidth=0.8)
+     ax.plot(preds, m.mmean + 1.96 * m.smean, color='black', linewidth=0.8)
      if (ndpost < npreds):
           print('Number of posterior draws (ndpost) are less than the number of', 
                 'x-values to predict. This is not recommended.')
@@ -253,7 +253,7 @@ y = co2plume[:,2]
 preds = np.array([(x, y) for x in range(npred_arr) for y in range(npred_arr)])/(npred_arr-1)
 preds = np.flip(preds,1) # flipped columns to match the preds in the R code
 
-shat = np.std(y)
+shat = np.std(y, ddof = 1)
 # Try m=200 trees, the recommended default
 m=200
 # And k=1
@@ -295,11 +295,11 @@ plt.savefig(f'{path}co2plume_orig.png')
 
 a = np.arange(0, 1.0001, 1/(npred_arr-1)); b = a;
 A, B = np.meshgrid(a, b)
-ax.plot_surface(A, B, m11.mmeans.reshape(npred_arr,npred_arr), color='black')
+ax.plot_surface(A, B, m11.mmean.reshape(npred_arr,npred_arr), color='black')
 ax.set_xlabel('Stack_inerts'); ax.set_ylabel('Time'); ax.set_zlabel('CO2')
 plt.savefig(f'{path}co2plume_fit.png')
 
 # Add the uncertainties (keep the surface from above, too):
-ax.plot_surface(A, B, (m11.mmeans + 1.96 * m11.smean).reshape(npred_arr,npred_arr), color='green')
-ax.plot_surface(A, B, (m11.mmeans - 1.96 * m11.smean).reshape(npred_arr,npred_arr), color='green')
+ax.plot_surface(A, B, (m11.mmean + 1.96 * np.mean(m11.smean)).reshape(npred_arr,npred_arr), color='green')
+ax.plot_surface(A, B, (m11.mmean - 1.96 * np.mean(m11.smean)).reshape(npred_arr,npred_arr), color='green')
 plt.savefig(f'{path}co2plume_fitp.png')

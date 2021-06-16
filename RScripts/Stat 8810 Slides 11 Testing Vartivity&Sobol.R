@@ -35,24 +35,30 @@ y=as.vector(z)
 library(Ropenbt)
 
 # Variance prior
-shat=0.1 # sd(y) # lower shat leads to more fitting, I think
-nu=3
-
-# Mean prior
-k=2 # lower k leads to more fitting, I think
+# Now, set up the fit:
+# Set values to be used in the fitting/predicting:
+# Variance and mean priors
+shat = 0.1 # (AKA shat) # in reality , it's lambdatrue^2?
+# lower shat --> more fitting, I think
+nu = 3
+k = 2 # lower k --> more fitting, I think
 
 # Tree prior
-alpha=0.95
-beta=2
-nc=100
+alpha = 0.95 # Default = 0.95
+beta = 2 # Default = 2
+nc = 1000 # (AKA numcut); Default = 100, but we usually use 1000
 
 # MCMC settings
-N=1000
-burn=1000
+N = 1000 # (AKA ndpost); Default = 1000
+burn = 1000 # (AKA nskip); Default = 100
+nadapt = 1000 # default = 1000
+tc = 4 # Default = 2
+ntree = 200 # (AKA m); Default = 1
+ntreeh = 1 # Default = 1
 
 fit=openbt(design, y, tc=4, pbd=c(0.7,0.0), overallsd=shat, overallnu = nu,
-           ntreeh=1, ntree=1, k=k, model="bart", power=beta, base=alpha,
-           numcut=nc, ndpost=N, nskip=burn)
+           ntreeh=ntreeh, ntree=ntree, k=k, model="bart", power=beta, base=alpha,
+           numcut=nc, ndpost=N, nskip=burn, nadapt = nadapt)
 str(fit)
 
 # Save fit:

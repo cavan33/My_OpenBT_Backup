@@ -70,7 +70,7 @@ beta=2
 nc=100
 # MCMC settings
 N=1000
-burn=1000
+burn=1000 # Default is technically 100, but we'll usually use 1000
 
 
 openbtbart <- function(design, y, tc, pbd, overallsd, overallnu, ntreeh, ntree,

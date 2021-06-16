@@ -21,5 +21,5 @@ library(devtools) # Still can't get devtools to install, but that's OK
 remotes::install_bitbucket("mpratola/openbt/Ropenbt")
 
 # Also, working directory changers:
-setwd("/home/clark/Documents/OpenBT/RWorkDir_OBT")
-# setwd("/home/clark/Desktop/Stat 5730/RWorkDir_Stat5730")
+setwd("~/Documents/OpenBT/RWorkDir_OBT")
+# setwd("~/Desktop/Stat 5730/RWorkDir_Stat5730")

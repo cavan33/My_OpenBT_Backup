@@ -100,7 +100,7 @@ class OPENBT(BaseEstimator):
         """
         self.n = self.y_train.shape[0]
         self.p = self.X_train.shape[0]
-        # Cutpoins
+        # Cutpoints
         if "xicuts" not in self.__dict__:
             self.xi = {}
             maxx = np.ceil(np.max(self.X_train, axis=1))
@@ -119,7 +119,7 @@ class OPENBT(BaseEstimator):
         # self.ntreeh = 1    # Removed so the user can set it
         if not(isinstance(self.overallsd, (int,float))): # If it wasn't user-inputted
              if self.modeltype in [1, 4, 5]:
-                  self.overallsd = np.std(self.y_train)
+                  self.overallsd = np.std(self.y_train, ddof = 1)
              else: self.overallsd = 1
         self.overalllambda = self.overallsd**2
         if not(isinstance(self.overallnu, (int,float))): # If it wasn't user-inputted
@@ -204,9 +204,13 @@ class OPENBT(BaseEstimator):
 
     def _run_model(self, train=True):
         cmd = "openbtcli" if train else "openbtpred"
+       
         sp = subprocess.run(["mpirun", "-np", str(self.tc), cmd, str(self.fpath)],
                             stdin=subprocess.DEVNULL, capture_output=True)
         # print(sp)
+        # if not(train):
+        #     print(os.path.abspath(self.fpath))
+        #     sys.exit('Examining tmp file(s)')
 
 
     def predict(self, X, q_lower=0.025, q_upper=0.975, **kwargs):
@@ -232,7 +236,6 @@ class OPENBT(BaseEstimator):
         res = {}
         res['mdraws'] = self.mdraws; res['sdraws'] = self.sdraws;
         res['mmean'] = self.mmean; res['smean'] = self.smean;
-        res['mmeans'] = self.mmeans; res['smeans'] = self.smeans;
         res['msd'] = self.msd; res['ssd'] = self.ssd;
         res['m_5'] = self.m_5; res['s_5'] = self.s_5;
         res['m_lower'] = self.m_lower; res['s_lower'] = self.s_lower;
@@ -253,14 +256,14 @@ class OPENBT(BaseEstimator):
         sdraws = []
         for f in sdraw_files:
             sdraws.append(np.loadtxt(f))
+        # print(sdraws[0]); print(sdraws[0][0])
+        # print(len(sdraws)); print(len(sdraws[0])); print(len(sdraws[0][0]))
         self.sdraws = np.concatenate(sdraws, axis=1) # Got rid of the transpose
-        # print(self.sdraws.shape); print(self.mdraws.shape)
         
         # New (added by me), since R returns arrays like these by default:
-        # Calculate mmean(s) and smean(s) arrays (non-plural -> 1 number, repeated),
-        # and related statistics
-        self.mmeans = np.empty(len(self.mdraws[0]))
-        self.smeans = np.empty(len(self.sdraws[0]))
+        # Calculate mmean and smean arrays, and related statistics
+        self.mmean = np.empty(len(self.mdraws[0]))
+        self.smean = np.empty(len(self.sdraws[0]))
         self.msd = np.empty(len(self.mdraws[0]))
         self.ssd = np.empty(len(self.mdraws[0]))
         self.m_5 = np.empty(len(self.mdraws[0]))
@@ -269,20 +272,17 @@ class OPENBT(BaseEstimator):
         self.s_lower = np.empty(len(self.sdraws[0]))
         self.m_upper = np.empty(len(self.mdraws[0]))
         self.s_upper = np.empty(len(self.sdraws[0]))
-        # print(self.mmeans.shape); print(self.smeans.shape)
         for j in range(len(self.mdraws[0])):
-             self.mmeans[j] = np.mean(self.mdraws[:, j])
-             self.smeans[j] = np.mean(self.sdraws[:, j])
-             self.msd[j] = np.std(self.mdraws[:, j])
-             self.ssd[j] = np.std(self.sdraws[:, j])
+             self.mmean[j] = np.mean(self.mdraws[:, j])
+             self.smean[j] = np.mean(self.sdraws[:, j])
+             self.msd[j] = np.std(self.mdraws[:, j], ddof = 1)
+             self.ssd[j] = np.std(self.sdraws[:, j], ddof = 1)
              self.m_5[j] = np.percentile(self.mdraws[:, j], 0.50)
              self.s_5[j] = np.percentile(self.sdraws[:, j], 0.50)
              self.m_lower[j] = np.percentile(self.mdraws[:, j], self.q_lower)
              self.s_lower[j] = np.percentile(self.sdraws[:, j], self.q_lower)
              self.m_upper[j] = np.percentile(self.mdraws[:, j], self.q_upper)
              self.s_upper[j] = np.percentile(self.sdraws[:, j], self.q_upper)
-        self.mmean = np.ones(len(self.mdraws[0]))*np.mean(self.mmeans)
-        self.smean = np.ones(len(self.sdraws[0]))*np.mean(self.smeans)
 
 
     def clean_model(self):
@@ -320,7 +320,7 @@ class OPENBT(BaseEstimator):
 
         for j in range(len(self.vdraws[0])): # (should = self.p)
              self.mvdraws[j] = np.mean(self.vdraws[:, j])
-             self.vdraws_sd[j] = np.std(self.vdraws[:, j])
+             self.vdraws_sd[j] = np.std(self.vdraws[:, j], ddof = 1)
              self.vdraws_5[j] = np.percentile(self.vdraws[:, j], 0.50)
              self.vdraws_lower[j] = np.percentile(self.vdraws[:, j], self.q_lower)
              self.vdraws_upper[j] = np.percentile(self.vdraws[:, j], self.q_upper)
@@ -353,7 +353,7 @@ class OPENBT(BaseEstimator):
 
         for j in range(len(self.vdrawsh[0])): # (should = self.p)
              self.mvdrawsh[j] = np.mean(self.vdrawsh[:, j])
-             self.vdrawsh_sd[j] = np.std(self.vdrawsh[:, j])
+             self.vdrawsh_sd[j] = np.std(self.vdrawsh[:, j], ddof = 1)
              self.vdrawsh_5[j] = np.percentile(self.vdrawsh[:, j], 0.50)
              self.vdrawsh_lower[j] = np.percentile(self.vdrawsh[:, j], self.q_lower)
              self.vdrawsh_upper[j] = np.percentile(self.vdrawsh[:, j], self.q_upper)
@@ -440,7 +440,7 @@ class OPENBT(BaseEstimator):
         self.si_upper = np.empty(self.p)
         for j in range(len(self.sidraws[0])): # (should = self.p?)
              self.msi[j] = np.mean(self.sidraws[:, j])
-             self.msi_sd[j] = np.std(self.sidraws[:, j])
+             self.msi_sd[j] = np.std(self.sidraws[:, j], ddof = 1)
              self.si_5[j] = np.percentile(self.sidraws[:, j], 0.50)
              self.si_lower[j] = np.percentile(self.sidraws[:, j], self.q_lower)
              self.si_upper[j] = np.percentile(self.sidraws[:, j], self.q_upper)
@@ -460,7 +460,7 @@ class OPENBT(BaseEstimator):
         self.sij_upper = np.empty(self.p)
         for j in range(len(self.sijdraws[0])): # (should = self.p?)
              self.msij[j] = np.mean(self.sijdraws[:, j])
-             self.sij_sd[j] = np.std(self.sijdraws[:, j])
+             self.sij_sd[j] = np.std(self.sijdraws[:, j], ddof = 1)
              self.sij_5[j] = np.percentile(self.sijdraws[:, j], 0.50)
              self.sij_lower[j] = np.percentile(self.sijdraws[:, j], self.q_lower)
              self.sij_upper[j] = np.percentile(self.sijdraws[:, j], self.q_upper)
@@ -480,7 +480,7 @@ class OPENBT(BaseEstimator):
         self.tsi_upper = np.empty(self.p)
         for j in range(len(self.tsidraws[0])): # (should = self.p?)
              self.mtsi[j] = np.mean(self.tsidraws[:, j])
-             self.tsi_sd[j] = np.std(self.tsidraws[:, j])
+             self.tsi_sd[j] = np.std(self.tsidraws[:, j], ddof = 1)
              self.tsi_5[j] = np.percentile(self.tsidraws[:, j], 0.50)
              self.tsi_lower[j] = np.percentile(self.tsidraws[:, j], self.q_lower)
              self.tsi_upper[j] = np.percentile(self.tsidraws[:, j], self.q_upper)
@@ -498,7 +498,7 @@ class OPENBT(BaseEstimator):
         """Calculate Sobol indices (more accurate than vartivity)
         """
         if (self.p <= 1 or (self.p - int(self.p) != 0)):
-             sys.exit('p (number of variables) must be 2 or more, and a whole number')
+             sys.exit('p (number of variables) must be 2 or more')
         # Write to config file:  
         sobol_params = [self.modelname, self.xiroot, self.ndpost, self.ntree,
                             self.ntreeh, self.p, self.minx, self.maxx, self.tc]

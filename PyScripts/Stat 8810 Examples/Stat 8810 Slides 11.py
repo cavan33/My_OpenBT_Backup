@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from sklearn import datasets, svm
 # Janky importing from openbt-python repo (you'll have to change this for your own machine):
 import sys
-sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
+sys.path.append("~/Documents/OpenBT/openbt-python") # os.getcwd() to check
 from openbt2 import OPENBT # I made changes to openbt.py & called it openbt2
 
 # Example (Our usual GP realization) originally using BayesTree, 
@@ -123,11 +123,11 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
      ax.set_xlabel('Observed'); ax.set_ylabel('Fitted'); ax.set_ylim(-1.5, 1)
      # plt.legend(loc='upper right')
      # Plot the central line: Overall mean predictor
-     ax.plot(preds, m.mmeans, 'b-', linewidth=2)
+     ax.plot(preds, m.mmean, 'b-', linewidth=2)
 
      # Make the full plot with the gray lines: (mmeans and smeans are now returned by m.predict()!)
-     ax.plot(preds, m.mmeans - 1.96 * m.smean, color='black', linewidth=0.8)
-     ax.plot(preds, m.mmeans + 1.96 * m.smean, color='black', linewidth=0.8)
+     ax.plot(preds, m.mmean - 1.96 * m.smean, color='black', linewidth=0.8)
+     ax.plot(preds, m.mmean + 1.96 * m.smean, color='black', linewidth=0.8)
      if (ndpost < npreds):
           print('Number of posterior draws (ndpost) are less than the number of', 
                 'x-values to predict. This is not recommended.')
