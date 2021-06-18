@@ -10,10 +10,10 @@ to how I wanted to set some more parameters.
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn import datasets, svm
+# from sklearn import datasets, svm
 # Janky importing from openbt-python repo (you'll have to change this for your own machine):
 import sys
-sys.path.append("~/Documents/OpenBT/openbt-python") # os.getcwd() to check
+sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
 from openbt2 import OPENBT # I made changes to openbt.py & called it openbt2
 
 # Example (Our usual GP realization) originally using BayesTree, 
@@ -47,7 +47,6 @@ def rhogeodacecormat(geoD,rho,alpha=2):
      # if(len(geoD) != len(rho)):
      #      print("rho vector doesn't match distance list"); exit()
      # ^Got rid of this warning because I'm doing my matrix alg. differently
-  
      R = np.ones(shape=(geoD.shape[0], geoD.shape[0])) # Not sure about this line
      for i in range(len(rho)):
           R = R*rho[i]**(geoD**alpha)
@@ -92,8 +91,8 @@ nc = 1000 # (AKA numcut); Default = 100, but we usually use 1000
 N = 1000 # (AKA ndpost); Default = 1000
 burn = 1000 # (AKA nskip); Default = 100
 nadapt = 1000 # default = 1000
-tc = 4 # Default = 2
-ntree = 200 # (AKA m); Default = 1
+tc = 4 # Default = 2, but we usually use 4
+ntree = 4 # (AKA m); Default = 1
 ntreeh = 1 # Default = 1
 
 # For plotting:
@@ -146,4 +145,12 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
 # plt.clf()
 
 fitv11 = m11.vartivity()
-# fits (sobol function) doesn't work for this example because p = 1
+# fits (sobol function) # doesn't work for this example because p = 1
+
+# summarize_fitp(fitp11)
+# summarize_fitv(fitv11)
+
+"""
+thingy = np.arange(8.0)
+np.array_split(thingy, 0)
+"""

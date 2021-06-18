@@ -33,11 +33,11 @@ class OPENBT(BaseEstimator):
         self.numcut = 100
         self.adaptevery = 100
         # Here are the extra parameters that I added, since I wanted to customize them:
-        self.overallsd = 1
-        self.overallnu = 10
-        self.k = 2
-        self.ntree = 1
-        self.ntreeh = 1
+        self.overallsd = None; self.overallnu = None
+        self.k = None
+        self.ntree = None; self.ntreeh = None
+        self.truncateds = None
+        # hyperthread = False # Supposed to let you run processes on all hyperthreads, not just each core
         # I added a few more if statements in _define_params() to make these go smoothly
         self.modelname = "model"
         self.summarystats = "FALSE"
@@ -81,10 +81,23 @@ class OPENBT(BaseEstimator):
         if self.model not in models:
             raise KeyError("Not supported model type")
         self.modeltype = models[self.model]
-        if not(isinstance(self.k, (int,float))): # If it wasn't user-inputted
-             k_map = {4: 2, 5: 5, 6: 1, 7: 1, 8: 2}
+        k_map = {1: 2, 2: 2, 3: 2, 4: 2, 5: 5, 6: 1, 7: 1, 8: 2}
+        onu_map = {1: 1, 2: 1, 3: 1, 4: 10, 5: 10, 6: -1, 7: -1, 8: 10}
+        ntree_map = {1: 1, 2: 1, 3: 1, 4: 200, 5: 200, 6: 200, 7: 200, 8: 200}
+        ntreeh_map = {1: 1, 2: 1, 3: 1, 4: 1, 5: 40, 6: 1, 7: 40, 8: 1}
+        if (self.k is None):
+             print("Overwriting k to agree with the model's default")
              self.k = k_map[self.modeltype]
-
+        if (self.overallnu is None):
+             print("Overwriting overallnu to agree with the model's default")
+             self.overallnu = onu_map[self.modeltype]
+        if (self.ntree is None):
+             print("Overwriting ntree to agree with the model's default")
+             self.ntree = ntree_map[self.modeltype]
+        if (self.ntreeh is None):
+             print("Overwriting ntreeh to agree with the model's default")
+             self.ntreeh = ntreeh_map[self.modeltype]
+        # overallsd will be done in the define_params function.
 
     def _update_h_args(self, arg):
         try:
@@ -114,18 +127,13 @@ class OPENBT(BaseEstimator):
         self.tau = (self.rgy[1] - self.rgy[0])/(2*np.sqrt(self.ntree)*self.k)
         self.fmeanout = 0 if self.modeltype in [
             1, 4, 5] else norm.ppf(self.f_mean)
-
-        # TODO ntreeh; I think it might be OK to just let the user set it...
-        # self.ntreeh = 1    # Removed so the user can set it
-        if not(isinstance(self.overallsd, (int,float))): # If it wasn't user-inputted
-             if self.modeltype in [1, 4, 5]:
-                  self.overallsd = np.std(self.y_train, ddof = 1)
-             else: self.overallsd = 1
+        # self.ntreeh = 1    # Removed so the user can set it (see set_model_type function)
+        osd = np.std(self.y_train, ddof = 1)
+        osd_map = {1: 1, 2: 1, 3: 1, 4: osd, 5: osd, 6: 1, 7: 1, 8: osd}
+        if (self.overallsd is None):
+             print("Overwriting overallsd to agree with the model's default")
+             self.overallsd = osd_map[self.modeltype]
         self.overalllambda = self.overallsd**2
-        if not(isinstance(self.overallnu, (int,float))): # If it wasn't user-inputted
-             if self.modeltype in [1, 4, 5, 6]:
-                  self.overallnu = 10
-             else: self.overallnu = 1
         if (self.modeltype == 6) & (isinstance(self.pbd, float)):
             self.pbd = [self.pbd, 0]
         [self._update_h_args(arg) for arg in ["power", "base",
@@ -142,6 +150,12 @@ class OPENBT(BaseEstimator):
                 raise ValueError("ntreeh should be 1")
             if self.pbdh > 0:
                 raise ValueError("pbdh should be 1")
+        # Special quantity for merck_truncated:
+        if (self.truncateds is None) & (self.modeltype == 8):
+             miny = np.min(self.y_train)
+             self.truncateds = (self.y_train == miny)
+        if self.tc <= 1: 
+             print("Setting tc to 2"); self.tc = 2
         # print((self.k, self.overallsd, self.overallnu, self.ntree, self.ntreeh))
 
 
@@ -174,19 +188,28 @@ class OPENBT(BaseEstimator):
 
 
     def __write_chunks(self, data, no_chunks, var, *args):
-        splitted_data = np.array_split(data, no_chunks)
+        if no_chunks == 0:
+             print("Writing all data to one 'chunk'"); no_chunks = 1
+        if (self.tc - int(self.tc) == 0):
+             splitted_data = np.array_split(data, no_chunks)
+        else:
+             sys.exit('Invalid tc input - exiting process')   
         int_added = 0 if var == "xp" else 1
+        # print(splitted_data)
         for i, ch in enumerate(splitted_data):
-            np.savetxt(str(self.fpath / Path(self.__dict__[var+"root"] + str(i+int_added))),
-                       ch, fmt=args[0])
+             # print(i); print(ch)
+             np.savetxt(str(self.fpath / Path(self.__dict__[var+"root"] + str(i+int_added))),
+               ch, fmt=args[0])
 
 
     def _write_data(self):
-        splits = (self.n - 1) // (self.n/(self.tc))
+        splits = (self.n - 1) // (self.n/(self.tc)) # Should = tc - 1 as long as n >= tc
+        # print("splits =", splits)
         self.__write_chunks(self.y_train, splits, "y", '%.7f')
         self.__write_chunks(np.transpose(self.X_train), splits, "x", '%.7f')
         self.__write_chunks(np.ones((self.n), dtype="int"),
                             splits, "s", '%.0f')
+        print(self.fpath)
         if self.X_train.shape[0] == 1:
              print("1 x variable, so correlation = 1")
              np.savetxt(str(self.fpath / Path(self.chgvroot)), [1], fmt='%.7f')
@@ -199,18 +222,16 @@ class OPENBT(BaseEstimator):
                 str(self.fpath / Path(self.xiroot + str(k+1))), v, fmt='%.7f')
         # print(os.path.abspath(self.fpath))
         # sys.exit('Examining tmp file(s)') # The data files were correct:
-        # 1 chgv, 1 config, 3 s's, 3 x's, 3 y's, 1 xi (xi had the most data).
+        # For tc = 4: 1 chgv, 1 config, 3 s's, 3 x's, 3 y's, 1 xi (xi had the most data).
 
 
     def _run_model(self, train=True):
         cmd = "openbtcli" if train else "openbtpred"
-       
         sp = subprocess.run(["mpirun", "-np", str(self.tc), cmd, str(self.fpath)],
                             stdin=subprocess.DEVNULL, capture_output=True)
         # print(sp)
         # if not(train):
-        #     print(os.path.abspath(self.fpath))
-        #     sys.exit('Examining tmp file(s)')
+        #     print(os.path.abspath(self.fpath)); sys.exit('Examining tmp file(s)')
 
 
     def predict(self, X, q_lower=0.025, q_upper=0.975, **kwargs):
@@ -250,12 +271,16 @@ class OPENBT(BaseEstimator):
         sdraw_files = sorted(list(self.fpath.glob("model.sdraws*")))
         mdraws = []
         for f in mdraw_files:
-            mdraws.append(np.loadtxt(f))
+            read = open(f, "r"); lines = read.readlines()
+            if lines[0] != '\n' and lines[1] != '\n': # If it's nonempty
+                 mdraws.append(np.loadtxt(f))
         # print(mdraws[0].shape); print(len(mdraws))
         self.mdraws = np.concatenate(mdraws, axis=1) # Got rid of the transpose
         sdraws = []
         for f in sdraw_files:
-            sdraws.append(np.loadtxt(f))
+            read = open(f, "r"); lines = read.readlines()
+            if lines[0] != '\n' and lines[1] != '\n': # If it's nonempty
+                 sdraws.append(np.loadtxt(f))
         # print(sdraws[0]); print(sdraws[0][0])
         # print(len(sdraws)); print(len(sdraws[0])); print(len(sdraws[0][0]))
         self.sdraws = np.concatenate(sdraws, axis=1) # Got rid of the transpose
@@ -295,7 +320,9 @@ class OPENBT(BaseEstimator):
         vdraws_files = sorted(list(self.fpath.glob("model.vdraws")))
         self.vdraws = np.array([])
         for f in vdraws_files:
-            self.vdraws = np.append(self.vdraws, np.loadtxt(f))
+            read = open(f, "r"); lines = read.readlines()
+            if lines[0] != '\n' and lines[1] != '\n': # If it's nonempty
+                 self.vdraws = np.append(self.vdraws, np.loadtxt(f))
         # self.vdraws[3] = 0.5 # to test transposing/ normalizing counts
         self.vdraws = self.vdraws.reshape(self.ndpost, self.p)
         # print(self.vdraws.shape); print(self.vdraws)
@@ -410,8 +437,10 @@ class OPENBT(BaseEstimator):
         # print(sobol_draws_files)
         self.so_draws = np.loadtxt(sobol_draws_files[0])
         for i in range(1, self.tc):
-             self.so_draws = np.vstack((self.so_draws,
-                                           np.loadtxt(sobol_draws_files[i])))   
+             read = open(sobol_draws_files[i], "r"); lines = read.readlines()
+             if lines[0] != '\n' and lines[1] != '\n': # If it's nonempty
+                  self.so_draws = np.vstack((self.so_draws,
+                                  np.loadtxt(sobol_draws_files[i])))   
         # print(self.so_draws.shape); print(self.so_draws[0:10])
         labs_temp = list(itertools.combinations(range(1, self.p + 1), 2))
         labs = np.empty(len(labs_temp), dtype = '<U4')
@@ -503,7 +532,7 @@ class OPENBT(BaseEstimator):
         sobol_params = [self.modelname, self.xiroot, self.ndpost, self.ntree,
                             self.ntreeh, self.p, self.minx, self.maxx, self.tc]
         self.configfile = Path(self.fpath / "config.sobol")
-        print(self.fpath) #print(sobol_params); 
+        print("Directory for calculations:", self.fpath) #print(sobol_params); 
         with self.configfile.open("w") as tfile:
             for param in sobol_params:
                 if type(param) != str and type(param) != int: # Makes minx & maxx into writable quantities, not arrays
@@ -546,3 +575,12 @@ class OPENBT(BaseEstimator):
 
 # Scratch lines:
 # os.path.exists("openbtvartivity"); os.path.abspath("openbtvartivity")
+
+"""
+# Old attempt at incorportating hyperthreasds (didn't quite work out):
+if self.hyperthread == True:
+     print("Using all available cores, since we need to use hyperthreads")
+     sp = subprocess.run(["mpirun", "--use-hwthread-cpus", cmd, 
+      str(self.fpath)], stdin=subprocess.DEVNULL, capture_output=True)
+else: # (Normal process run here)
+"""

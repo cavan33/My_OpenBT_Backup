@@ -10,10 +10,10 @@ to how I wanted to set some more parameters.
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn import datasets, svm
+# from sklearn import datasets, svm
 # Janky importing from openbt-python repo below: (you'll have to change this for your own machine):
 import sys
-sys.path.append("~/Documents/OpenBT/openbt-python") # os.getcwd() to check
+sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
 from openbt2 import OPENBT # I made changes to openbt.py & called it openbt2
 
 # Example (Our usual GP realization) originally using BayesTree, 
@@ -92,7 +92,7 @@ nc = 100 # (AKA numcut); Default = 100
 N = 1000 # (AKA ndpost); Default = 1000
 burn = 1000 # (AKA nskip); Default = 100
 nadapt = 1000 # Default = 1000
-tc = 4 # Default = 2
+tc = 4 # Default = 2, but we usually use 4
 ntree = 1 # Default = 1
 ntreeh = 1 # Default = 1
 npred_arr = 25

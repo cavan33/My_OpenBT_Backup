@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from sklearn import datasets, svm
 # Janky importing from openbt-python repo (you'll have to change this for your own machine):
 import sys
-sys.path.append("~/Documents/OpenBT/openbt-python") # os.getcwd() to check
+sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
 from openbt2 import OPENBT # I made changes to openbt.py & called it openbt2
 
 # Example (Our usual GP realization) originally using BayesTree, 

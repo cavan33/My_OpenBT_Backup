@@ -52,11 +52,11 @@ nc = 1000 # (AKA numcut); Default = 100, but we usually use 1000
 N = 1000 # (AKA ndpost); Default = 1000
 burn = 1000 # (AKA nskip); Default = 100
 nadapt = 1000 # default = 1000
-tc = 4 # Default = 2
-ntree = 200 # (AKA m); Default = 1
+tc = 3 # Default = 2, but we usually use 4
+ntree = 4 # (AKA m); Default = 1
 ntreeh = 1 # Default = 1
 
-fit=openbt(design, y, tc=4, pbd=c(0.7,0.0), overallsd=shat, overallnu = nu,
+fit=openbt(design, y, tc=tc, pbd=c(0.7,0.0), overallsd=shat, overallnu = nu,
            ntreeh=ntreeh, ntree=ntree, k=k, model="bart", power=beta, base=alpha,
            numcut=nc, ndpost=N, nskip=burn, nadapt = nadapt)
 str(fit)
@@ -69,7 +69,7 @@ openbt.save(fit,"slides11fit_testv")
 
 # Calculate predictions:
 preds=matrix(seq(0,1,length=100),ncol=1) # This is the x_test matrix
-fitp=predict.openbt(fit, x.test=preds, tc=4)
+fitp=predict.openbt(fit, x.test=preds, tc=tc)
 str(fitp)
 
 # Easy part of the plot:
@@ -90,4 +90,5 @@ lines(preds,fitp$mmean,lwd=2,col="blue")
 points(design,y,pch=20,col="red")
 
 fitv = vartivity.openbt(fit)
-fits = sobol.openbt(fit)
+# summarize_fitv(fitv)
+# summarize_fitp(fitp)
