@@ -52,8 +52,8 @@ nc = 1000 # (AKA numcut); Default = 100, but we usually use 1000
 N = 1000 # (AKA ndpost); Default = 1000
 burn = 1000 # (AKA nskip); Default = 100
 nadapt = 1000 # default = 1000
-tc = 3 # Default = 2, but we usually use 4
-ntree = 4 # (AKA m); Default = 1
+tc = 4 # Default = 2, but we usually use 4
+ntree = 200 # (AKA m); Default = 1
 ntreeh = 1 # Default = 1
 
 fit=openbt(design, y, tc=tc, pbd=c(0.7,0.0), overallsd=shat, overallnu = nu,

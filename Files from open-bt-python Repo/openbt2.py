@@ -49,9 +49,9 @@ class OPENBT(BaseEstimator):
     def fit(self, X, y):
         """Writes out data and fits model
         """
-        self.X_train = np.transpose(X)
-        self.f_mean = np.mean(y)
-        self.y_train = y - self.f_mean
+        self.X_train = np.transpose(X); self.y_orig = y
+        self.fmean = np.mean(y)
+        # self.y_train = y - self.fmean # I axed this in order to customize for different modeltypes; see define_params
         self._define_params() # This is where the default variables get overwritten
         print("Writing config file and data")
         self._write_config_file()
@@ -111,6 +111,18 @@ class OPENBT(BaseEstimator):
     def _define_params(self):
         """Set up parameters for the openbtcli
         """
+        if (self.modeltype in [4, 5, 8]):
+           self.y_train = self.y_orig - self.fmean
+           self.fmean_out = 0
+        elif (self.modeltype in [6, 7]):
+            self.fmean_out = norm.ppf(self.fmean)
+            self.y_train = self.y_orig
+            self.uniqy = np.unique(self.y_train) # Already sorted, btw
+            if(len(self.uniqy) > 2 or self.uniqy[1] != 0 or self.uniqy[2] != 1):
+                 sys.exit("Invalid y.train: Probit requires dichotomous response coded 0/1") 
+        else:
+            self.y_train = self.y_orig 
+            self.fmean_out = None   
         self.n = self.y_train.shape[0]
         self.p = self.X_train.shape[0]
         # Cutpoints
@@ -125,8 +137,6 @@ class OPENBT(BaseEstimator):
         self.rgy = [np.min(self.y_train), np.max(self.y_train)
                     ] if self.modeltype in [1, 4, 5] else [-2, 2]
         self.tau = (self.rgy[1] - self.rgy[0])/(2*np.sqrt(self.ntree)*self.k)
-        self.fmeanout = 0 if self.modeltype in [
-            1, 4, 5] else norm.ppf(self.f_mean)
         # self.ntreeh = 1    # Removed so the user can set it (see set_model_type function)
         osd = np.std(self.y_train, ddof = 1)
         osd_map = {1: 1, 2: 1, 3: 1, 4: osd, 5: osd, 6: 1, 7: 1, 8: osd}
@@ -165,7 +175,7 @@ class OPENBT(BaseEstimator):
         f = tempfile.mkdtemp(prefix="openbtpy_")
         self.fpath = Path(f)
         run_params = [self.modeltype,
-                      self.xroot, self.yroot, self.fmeanout,
+                      self.xroot, self.yroot, self.fmean_out,
                       self.ntree, self.ntreeh,
                       self.ndpost, self.nskip,
                       self.nadapt, self.adaptevery,
@@ -193,7 +203,7 @@ class OPENBT(BaseEstimator):
         if (self.tc - int(self.tc) == 0):
              splitted_data = np.array_split(data, no_chunks)
         else:
-             sys.exit('Invalid tc input - exiting process')   
+             sys.exit('Fit: Invalid tc input - exiting process')   
         int_added = 0 if var == "xp" else 1
         # print(splitted_data)
         for i, ch in enumerate(splitted_data):
@@ -213,10 +223,15 @@ class OPENBT(BaseEstimator):
         if self.X_train.shape[0] == 1:
              print("1 x variable, so correlation = 1")
              np.savetxt(str(self.fpath / Path(self.chgvroot)), [1], fmt='%.7f')
-        else:
-             print("2+ x variables")
+        elif self.X_train.shape[0] == 1:
+             print("2 x variables")
              np.savetxt(str(self.fpath / Path(self.chgvroot)),
                         [spearmanr(self.X_train, axis=1)[0]], fmt='%.7f')
+        else:
+             print("3+ x variables")
+             np.savetxt(str(self.fpath / Path(self.chgvroot)),
+                        spearmanr(self.X_train, axis=1)[0], fmt='%.7f')
+             
         for k, v in self.xi.items():
             np.savetxt(
                 str(self.fpath / Path(self.xiroot + str(k+1))), v, fmt='%.7f')
@@ -226,10 +241,16 @@ class OPENBT(BaseEstimator):
 
 
     def _run_model(self, train=True):
-        cmd = "openbtcli" if train else "openbtpred"
+        if train == True:
+             cmd = "openbtcli"
+        elif (self.modeltype in [4, 5]): # bart and hbart
+             cmd = "openbtpred"
+        elif (self.modeltype==1): # Should this be a break statement? Add soon
+             cmd = "openbtbt"
         sp = subprocess.run(["mpirun", "-np", str(self.tc), cmd, str(self.fpath)],
                             stdin=subprocess.DEVNULL, capture_output=True)
         # print(sp)
+        # A check:
         # if not(train):
         #     print(os.path.abspath(self.fpath)); sys.exit('Examining tmp file(s)')
 
@@ -246,7 +267,7 @@ class OPENBT(BaseEstimator):
         pred_params = [self.modelname, self.modeltype,
                        self.xiroot, self.xproot, self.ndpost,
                        self.ntree, self.ntreeh,
-                       self.p_test, self.tc, self.f_mean]
+                       self.p_test, self.tc, self.fmean]
         # print(self.ntree); print(self.ntreeh)
         with self.configfile.open("w") as pfile:
             for param in pred_params:
@@ -452,8 +473,9 @@ class OPENBT(BaseEstimator):
         # All this is the same as R, but the beginning of the indices are shifted by
         # 1 since Python starts at index 0. Remember, Python omits the column at the 
         # end of the index, so the end index is actually the same as R!
+        self.num_pairs = int(self.p*(self.p-1)/2)
         self.vidraws = draws[:, 0:p] # Columns 1-2 for p = 2
-        self.vijdraws = draws[:, p:int((p+p*(p-1)/2))] # Column 3 for p = 2
+        self.vijdraws = draws[:, p:p+self.num_pairs] # Column 3 for p = 2
         self.tvidraws = draws[:, (ncol-1-p):(ncol-1)] # Columns 4 and 5 for p = 2
         self.vdraws = draws[:, ncol-1].reshape(self.ndpost, 1) # Column 6 for p = 2 (aLways last column)
         self.sidraws = self.vidraws / self.vdraws
@@ -482,12 +504,12 @@ class OPENBT(BaseEstimator):
              self.si_upper = self.si_upper[0]
         # ^ Names?    
         # Do this again for i,j:
-        self.msij = np.empty(self.p)
-        self.sij_sd = np.empty(self.p)
-        self.sij_5 = np.empty(self.p)
-        self.sij_lower = np.empty(self.p)
-        self.sij_upper = np.empty(self.p)
-        for j in range(len(self.sijdraws[0])): # (should = self.p?)
+        self.msij = np.empty(self.num_pairs)
+        self.sij_sd = np.empty(self.num_pairs)
+        self.sij_5 = np.empty(self.num_pairs)
+        self.sij_lower = np.empty(self.num_pairs)
+        self.sij_upper = np.empty(self.num_pairs)
+        for j in range(len(self.sijdraws[0])): # (should = self.num_pairs?)
              self.msij[j] = np.mean(self.sijdraws[:, j])
              self.sij_sd[j] = np.std(self.sijdraws[:, j], ddof = 1)
              self.sij_5[j] = np.percentile(self.sijdraws[:, j], 0.50)
@@ -523,16 +545,16 @@ class OPENBT(BaseEstimator):
         # ^ Names?     
        
         
-    def sobol(self, cmdopt = 'serial', q_lower=0.025, q_upper=0.975):  
+    def sobol(self, cmdopt = 'serial', q_lower=0.025, q_upper=0.975, tc = 4):  
         """Calculate Sobol indices (more accurate than vartivity)
         """
         if (self.p <= 1 or (self.p - int(self.p) != 0)):
-             sys.exit('p (number of variables) must be 2 or more')
+             sys.exit('Sobol: p (number of variables) must be 2 or more')
         # Write to config file:  
         sobol_params = [self.modelname, self.xiroot, self.ndpost, self.ntree,
                             self.ntreeh, self.p, self.minx, self.maxx, self.tc]
         self.configfile = Path(self.fpath / "config.sobol")
-        print("Directory for calculations:", self.fpath) #print(sobol_params); 
+        # print("Directory for sobol calculations:", self.fpath) #print(sobol_params); 
         with self.configfile.open("w") as tfile:
             for param in sobol_params:
                 if type(param) != str and type(param) != int: # Makes minx & maxx into writable quantities, not arrays
@@ -545,10 +567,10 @@ class OPENBT(BaseEstimator):
              sp = subprocess.run([cmd, str(self.fpath)],
                             stdin=subprocess.DEVNULL, capture_output=True)
         elif(cmdopt == 'MPI'):
-             sp = subprocess.run(["mpirun", "-np", str(self.tc), cmd, str(self.fpath)],
+             sp = subprocess.run(["mpirun", "-np", str(tc), cmd, str(self.fpath)],
                             stdin=subprocess.DEVNULL, capture_output=True)
         else:
-             sys.exit('Invalid cmdopt (command option)')
+             sys.exit('Sobol: Invalid cmdopt (command option)')
         # print(sp)
         # Read in result (and set a bunch of extra attributes):
         self._read_in_sobol(q_lower, q_upper)

@@ -300,6 +300,6 @@ ax.set_xlabel('Stack_inerts'); ax.set_ylabel('Time'); ax.set_zlabel('CO2')
 plt.savefig(f'{path}co2plume_fit.png')
 
 # Add the uncertainties (keep the surface from above, too):
-ax.plot_surface(A, B, (m11.mmean + 1.96 * np.mean(m11.smean)).reshape(npred_arr,npred_arr), color='green')
-ax.plot_surface(A, B, (m11.mmean - 1.96 * np.mean(m11.smean)).reshape(npred_arr,npred_arr), color='green')
+ax.plot_surface(A, B, (m11.mmean + 1.96 * m11.smean).reshape(npred_arr,npred_arr), color='green')
+ax.plot_surface(A, B, (m11.mmean - 1.96 * m11.smean).reshape(npred_arr,npred_arr), color='green')
 plt.savefig(f'{path}co2plume_fitp.png')

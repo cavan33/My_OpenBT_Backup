@@ -12,33 +12,8 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
 from openbt2 import OPENBT # I made changes to openbt.py & called it openbt2
-
-def summarize_fitp(fitp):
-     print(fitp['mdraws'][0, 0:5]); print(np.mean(fitp['mdraws']))
-     print(fitp['sdraws'][0, 0:5]); print(np.mean(fitp['sdraws']))
-     # print(fitp['mmean'][0:5]); print(np.mean(fitp['mmean']))
-     # print(fitp['smean'][0:5]); print(np.mean(fitp['smean']))
-     print(fitp['msd'][0:5]); print(np.mean(fitp['msd']))
-     print(fitp['ssd'][0:5]); print(np.mean(fitp['ssd']))
-     print(np.mean(fitp['m_5'])); print(np.mean(fitp['m_lower'])); print(np.mean(fitp['m_upper']))
-     print(np.mean(fitp['s_5'])); print(np.mean(fitp['s_lower'])); print(np.mean(fitp['s_upper']))
-def summarize_fitv(fitv):
-     print(fitv['vdraws'][0:29, :]); print(np.mean(fitv['vdraws']))
-     print(fitv['vdrawsh'][0:29, :]); print(np.mean(fitv['vdrawsh']))
-     print(fitv['mvdraws']); print(fitv['mvdrawsh'])
-     print(fitv['vdraws_sd']); print(fitv['vdrawsh_sd']); print(fitv['vdraws_5'])
-     print(fitv['vdrawsh_5']); print(fitv['vdraws_lower']); print(fitv['vdraws_upper'])
-     print(fitv['vdrawsh_lower']); print(fitv['vdrawsh_upper'])
-def summarize_fits(fits):
-     print(np.mean(fits['vidraws'])); print(np.mean(fits['vijdraws']))
-     print(np.mean(fits['tvidraws'])); print(np.mean(fits['vdraws']))
-     print(np.mean(fits['sidraws'])); print(np.mean(fits['sijdraws']))
-     print(np.mean(fits['tsidraws']))
-     print(fits['msi']); print(fits['msi_sd']); print(fits['si_5'])
-     print(fits['si_lower']); print(fits['si_upper']); print(fits['msij'])
-     print(fits['sij_sd']); print(fits['sij_5']); print(fits['sij_lower'])
-     print(fits['sij_upper']); print(fits['mtsi']); print(fits['tsi_sd'])
-     print(fits['tsi_5']); print(fits['tsi_lower']); print(fits['tsi_upper'])
+     
+# CO2 Plume example:
 # Settings from further above in the Slides 13 example:
 # Tree prior
 alpha = 0.95 # Default = 0.95
@@ -49,7 +24,7 @@ burn = 1000 # (AKA nskip); Default = 100, but we usually use 1000
 nadapt = 1000 # Default = 1000
 adaptevery = 100 # Default = 100
 ntreeh = 1 # Default = 1
-tc = 3 # Default = 2, but we usually use 4
+tc = 4 # Default = 2, but we usually use 4
 npred_arr = 20
 
 # Load data:
@@ -62,7 +37,7 @@ preds = np.flip(preds,1) # flipped columns to match the preds in the R code
 
 shat = np.std(y, ddof = 1)
 # Try m=200 trees, the recommended default
-m=25
+m=200
 # And k=1
 k=1
 # And nu=1, q=.99
@@ -72,7 +47,6 @@ nc=1000
 
 # Do this one manually, since it's a different setup than what I wrote the
 # function for:
-tc = 6
 m13 = OPENBT(model="bart", ndpost=N, nadapt = nadapt, nskip=burn, power=beta,
              base=alpha, tc=tc, numcut=nc, ntree=m, ntreeh=ntreeh, k=k,
              overallsd=shat, overallnu=nu)
@@ -85,3 +59,30 @@ fitv13 = m13.vartivity()
 
 fits13 = m13.sobol(cmdopt = 'MPI')
 # summarize_fits(fits13)
+
+"""
+# Plot the original points and the fit on top:
+path = 'Documents/OpenBT/PyScripts/Plots/' # Will be different for your filesystem
+from mpl_toolkits.mplot3d import Axes3D
+%matplotlib qt5
+# ^ Comment this line out if not running in iPython
+# To go back to normal plot-showing: Go into Tools-Preferences-Graphics in Spyder, btw
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+plt.rcParams['axes.labelsize'] = 12;
+plt.rcParams['xtick.labelsize'] = 10; plt.rcParams['ytick.labelsize'] = 10;
+ax.scatter(co2plume[:,0], co2plume[:,1], co2plume[:,2], color='black')
+ax.set_xlabel('Stack_inerts'); ax.set_ylabel('Time'); ax.set_zlabel('CO2')
+# plt.savefig(f'{path}co2plume_orig.png')
+
+a = np.arange(0, 1.0001, 1/(npred_arr-1)); b = a;
+A, B = np.meshgrid(a, b)
+ax.plot_surface(A, B, m13.mmean.reshape(npred_arr,npred_arr), color='black')
+ax.set_xlabel('Stack_inerts'); ax.set_ylabel('Time'); ax.set_zlabel('CO2')
+plt.savefig(f'{path}co2plume_fit_testing.png')
+
+# Add the uncertainties (keep the surface from above, too):
+ax.plot_surface(A, B, (m13.mmean + 1.96 * m13.smean).reshape(npred_arr,npred_arr), color='green')
+ax.plot_surface(A, B, (m13.mmean - 1.96 * m13.smean).reshape(npred_arr,npred_arr), color='green')
+plt.savefig(f'{path}co2plume_fitp_testing.png')
+"""
