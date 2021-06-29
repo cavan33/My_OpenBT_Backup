@@ -241,12 +241,7 @@ class OPENBT(BaseEstimator):
 
 
     def _run_model(self, train=True):
-        if train == True:
-             cmd = "openbtcli"
-        elif (self.modeltype in [4, 5]): # bart and hbart
-             cmd = "openbtpred"
-        elif (self.modeltype==1): # Should this be a break statement? Add soon
-             cmd = "openbtbt"
+        cmd = "openbtcli" if train else "openbtpred"
         sp = subprocess.run(["mpirun", "-np", str(self.tc), cmd, str(self.fpath)],
                             stdin=subprocess.DEVNULL, capture_output=True)
         # print(sp)
@@ -333,8 +328,7 @@ class OPENBT(BaseEstimator):
 
     def clean_model(self):
         subprocess.run(f"rm -rf {str(self.fpath)}", shell=True)
-       
-          
+               
 #-----------------------------------------------------------------------------
 # Clark's functions (made from scratch, not edited from Zoltan's version):
     def _read_in_vartivity(self, q_lower, q_upper):
@@ -449,8 +443,6 @@ class OPENBT(BaseEstimator):
         return res
    
     
-   
-     
    
      
     def _read_in_sobol(self, q_lower, q_upper):
@@ -599,7 +591,7 @@ class OPENBT(BaseEstimator):
 # os.path.exists("openbtvartivity"); os.path.abspath("openbtvartivity")
 
 """
-# Old attempt at incorportating hyperthreasds (didn't quite work out):
+# Old attempt at incorportating hyperthreads (didn't quite work out):
 if self.hyperthread == True:
      print("Using all available cores, since we need to use hyperthreads")
      sp = subprocess.run(["mpirun", "--use-hwthread-cpus", cmd, 

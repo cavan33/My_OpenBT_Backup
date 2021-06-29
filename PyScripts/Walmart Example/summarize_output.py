@@ -32,7 +32,43 @@ def summarize_fits(fits):
      # print(fits['sij_sd']); print(fits['sij_5']); print(fits['sij_lower'])
      # print(fits['sij_upper']); print(fits['mtsi']); print(fits['tsi_sd'])
      # print(fits['tsi_5']); print(fits['tsi_lower']); print(fits['tsi_upper'])
-def save_fits(fits, fname):
+     
+def save_fit_obj(fit, fname, objtype):
+     from pathlib import Path
+     to_save = dict(fit) # A "shallow copy"
+     configfile = Path(fname)
+     with configfile.open("w") as f:
+          for cat in to_save:
+               f.write(str(cat)+": \n")
+               f.write(str(to_save[cat])+"\n")
+          if objtype == 'fitp': # (Nothing needed for objtype == 'fit')
+               f.write("Mean(mdraws): \n"); f.write(str(np.mean(fit['mdraws']))+"\n")
+               f.write("Mean(sdraws): \n"); f.write(str(np.mean(fit['sdraws']))+"\n")
+               f.write("Mean(msd): \n"); f.write(str(np.mean(fit['msd']))+"\n")
+               f.write("Mean(ssd): \n"); f.write(str(np.mean(fit['ssd']))+"\n")
+               f.write("Mean(m_lower): \n"); f.write(str(np.mean(fit['m_lower']))+"\n")
+               f.write("Mean(m_5): \n"); f.write(str(np.mean(fit['m_5']))+"\n")
+               f.write("Mean(m_upper): \n"); f.write(str(np.mean(fit['m_upper']))+"\n")
+               f.write("Mean(s_lower): \n"); f.write(str(np.mean(fit['s_lower']))+"\n")
+               f.write("Mean(s_5): \n"); f.write(str(np.mean(fit['s_5']))+"\n")
+               f.write("Mean(s_upper): \n"); f.write(str(np.mean(fit['s_upper']))+"\n")
+          elif objtype == 'fits':
+               f.write("Mean(vidraws): \n"); f.write(str(np.mean(fit['vidraws']))+"\n")
+               f.write("Mean(vijdraws): \n"); f.write(str(np.mean(fit['vijdraws']))+"\n")
+               f.write("Mean(tvidraws): \n"); f.write(str(np.mean(fit['tvidraws']))+"\n")
+               f.write("Mean(vdraws): \n"); f.write(str(np.mean(fit['vdraws']))+"\n")
+               f.write("Mean(sidraws): \n"); f.write(str(np.mean(fit['sidraws']))+"\n")
+               f.write("Mean(sijdraws): \n"); f.write(str(np.mean(fit['sijdraws']))+"\n")
+               f.write("Mean(tsidraws): \n"); f.write(str(np.mean(fit['tsidraws']))+"\n")
+               f.write("Mean(msij): \n"); f.write(str(np.mean(fit['msij']))+"\n")
+               f.write("Mean(sij_sd): \n"); f.write(str(np.mean(fit['sij_sd']))+"\n")
+               f.write("Mean(sij_5): \n"); f.write(str(np.mean(fit['sij_5']))+"\n")
+               f.write("Mean(sij_lower): \n"); f.write(str(np.mean(fit['sij_lower']))+"\n")
+               f.write("Mean(sij_upper): \n"); f.write(str(np.mean(fit['sij_upper']))+"\n")
+               f.write("Mean(so_draws): \n"); f.write(str(np.mean(fit['so_draws']))+"\n")
+               
+  
+def save_fits_old(fits, fname):
      from pathlib import Path
      to_save = dict(fits) # A "shallow copy"
      for cat in ('vidraws', 'vijdraws', 'tvidraws', 'vdraws', 'sidraws', 'sijdraws', 'tsidraws'):
@@ -42,4 +78,3 @@ def save_fits(fits, fname):
           for cat in to_save:
                tfile.write(str(cat)+": \n")
                tfile.write(str(to_save[cat])+"\n")
-     # print(to_save)
