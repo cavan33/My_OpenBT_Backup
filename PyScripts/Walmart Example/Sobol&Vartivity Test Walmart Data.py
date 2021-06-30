@@ -27,7 +27,7 @@ burn = 2000 # (AKA nskip); Default = 100
 nadapt = 2000 # Default = 1000
 adaptevery = 100 # Default = 100
 ntreeh = 1 # Default = 1
-tc = 6 # Default = 2, but we usually use 4
+tc = 5 # Default = 2
 shat = np.std(y, ddof = 1)
 m=200
 k=1
@@ -56,14 +56,21 @@ fitv = m.vartivity()
 # summarize_fitv(fitv)
 
 # Sobol:
-fits = m.sobol(cmdopt = 'MPI', tc = 6)
+fits = m.sobol(cmdopt = 'MPI', tc = tc)
 # summarize_fits(fits)
 
 # Save objects:
-fpath = '/home/clark/Documents/OpenBT/PyScripts/Walmart Example/Results/'
-save_fit_obj(fit, f'{fpath}fit_result.txt', objtype = 'fit')
-save_fit_obj(fitp, f'{fpath}fitp_result.txt', objtype = 'fitp')
-save_fit_obj(fitv, f'{fpath}fitv_result.txt', objtype = 'fitv')
-save_fit_obj(fits, f'{fpath}fits_result.txt', objtype = 'fits')
+fpath1 = '/home/clark/Documents/OpenBT/PyScripts/Walmart Example/Results/'
+save_fit_obj(fit, f'{fpath1}fit_result.txt', objtype = 'fit')
+save_fit_obj(fitp, f'{fpath1}fitp_result.txt', objtype = 'fitp')
+save_fit_obj(fitv, f'{fpath1}fitv_result.txt', objtype = 'fitv')
+save_fit_obj(fits, f'{fpath1}fits_result.txt', objtype = 'fits')
 
-# Plot y vs yhat plots:
+# Plot y vs yhat plots (not working yet!)
+fpath2 = '/home/clark/Documents/OpenBT/PyScripts/Walmart Example/Plots/'
+ax = fig.add_subplot(111)
+ax.plot(y, fitp, 'ro') # label=current_time can help with plot versions
+ax.set_title(f'Test Sales vs. Predicted mean response, ntree = {ntree}')
+ax.set_xlabel('Observed y'); ax.set_ylabel('Fitted y ($^{y}$')
+# plt.legend(loc='upper right')
+plt.savefig(f'{fpath2}y-vs-yhat1.png')

@@ -28,9 +28,38 @@ summarize_fits <- function(fits){
   # print(fits$tsi.5); print(fits$tsi.lower); print(fits$tsi.upper)
 }
 
-save_fit_obj <- function(fit, fname){
+save_fit_obj <- function(fit, fname, objtype){
   to_save <- data.frame(unlist(fit))
-  write.table(to_save, file = fname, sep = "") # How do I add the name of the category??
+  write.table(to_save, file = paste(fname, '.txt', sep=""), sep = "")
+  if (objtype == 'fitp'){ # (Nothing needed for objtype == 'fit')
+    to_save2 <- list()
+    to_save2[1] <- paste("Mean(mdraws): ", toString(mean(fit$mdraws)), "\n", sep="")
+    to_save2[2] <- paste("Mean(sdraws): ", toString(mean(fit$sdraws)), "\n", sep="")
+    to_save2[3] <- paste("Mean(msd): ", toString(mean(fit$msd)), "\n", sep="")
+    to_save2[4] <- paste("Mean(ssd): ", toString(mean(fit$ssd)), "\n", sep="")
+    to_save2[5] <- paste("Mean(m_lower): ", toString(mean(fit$m.lower)), "\n", sep="")
+    to_save2[4] <- paste("Mean(m_5): ", toString(mean(fit$m.5)), "\n", sep="")
+    to_save2[6] <- paste("Mean(m_upper): ", toString(mean(fit$m.upper)), "\n", sep="")
+    to_save2[7] <- paste("Mean(s_lower): ", toString(mean(fit$s.lower)), "\n", sep="")
+    to_save2[8] <- paste("Mean(s_5): ", toString(mean(fit$s.5)), "\n", sep="")
+    to_save2[9] <- paste("Mean(s_upper): ", toString(mean(fit$s.upper)), "\n", sep="")
+    write.table(to_save2, file = paste(fname, '_summary.txt', sep = ""), sep="")
+  }  else if (objtype == 'fits'){
+    to_save2 <- list()
+    to_save2[1] <- paste("Mean(vidraws): ", toString(mean(fit$vidraws)), "\n", sep="")
+    to_save2[2] <- paste("Mean(vijdraws): ", toString(mean(fit$vijdraws)), "\n", sep="")
+    to_save2[3] <- paste("Mean(tvidraws): ", toString(mean(fit$tvidraws)), "\n", sep="")
+    to_save2[4] <- paste("Mean(vdraws): ", toString(mean(fit$vdraws)), "\n", sep="")
+    to_save2[5] <- paste("Mean(sidraws): ", toString(mean(fit$sidraws)), "\n", sep="")
+    to_save2[6] <- paste("Mean(sijdraws): ", toString(mean(fit$sijdraws)), "\n", sep="")
+    to_save2[7] <- paste("Mean(tsidraws): ", toString(mean(fit$tsidraws)), "\n", sep="")
+    to_save2[8] <- paste("Mean(msij): ", toString(mean(fit$msij)), "\n", sep="")
+    to_save2[9] <- paste("Mean(sij_sd): ", toString(mean(fit$sij.sd)), "\n", sep="")
+    to_save2[10] <- paste("Mean(sij_5): ", toString(mean(fit$sij.5)), "\n", sep="")
+    to_save2[11] <- paste("Mean(sij_lower): ", toString(mean(fit$sij.lower)), "\n", sep="")
+    to_save2[12] <- paste("Mean(sij_upper): ", toString(mean(fit$sij.upper)), "\n", sep="")
+    write.table(to_save2, file = paste(fname, '_summary.txt', sep = ""), sep="")
+  }
 }
 
 

@@ -12,14 +12,14 @@ burn = 2000 # (AKA nskip); Default = 100
 nadapt = 2000 # Default = 1000
 adaptevery = 100 # Default = 100
 ntreeh = 1 # Default = 1
-tc = 6 # Default = 2, but we will use 6 from now on
+tc = 5 # Default = 2, but we will use 5 or 6 from now on
 shat = sd(y)
 m=200
 k=1
 nu=1
 nc=2000
 
-npred_arr = 40000; set.seed(88)
+npred_arr = 25000; set.seed(88) # 40000 was overloading my computer!
 preds <- data.frame()
 # Categorical variables:
 for (v in 1:4){
@@ -34,8 +34,8 @@ library(pryr); object_size(preds) # Should be only a few MB (not 100+!)
 
 library(Ropenbt)
 fit <- openbt(x, y, model="bart", ndpost=N, nadapt=nadapt, nskip=burn, power=beta,
-           base=alpha, tc=tc, numcut=nc, ntree=m, ntreeh=ntreeh, k=k, 
-           overallsd=shat, overallnu=nu, pbd=c(0.7,0.0))
+              base=alpha, tc=tc, numcut=nc, ntree=m, ntreeh=ntreeh, k=k, 
+              overallsd=shat, overallnu=nu, pbd=c(0.7,0.0))
 str(fit)
 
 fitp <- predict.openbt(fit, x.test=preds, tc=tc)
@@ -48,14 +48,24 @@ fitv <- vartivity.openbt(fit)
 
 # Sobol:
 fits <- sobol.openbt(fit, tc=tc)
-summarize_fits(fits)
+# summarize_fits(fits)
 # save_fits(fits, '/home/clark/Documents/OpenBT/RScripts/Walmart Example/Results/fits_result.txt')
 
 # Save objects:
 fpath = '/home/clark/Documents/OpenBT/RScripts/Walmart Example/Results/'
-save_fit_obj(fit, paste(fpath, 'fit_result.txt', sep=""))
-save_fit_obj(fitp, paste(fpath, 'fitp_result.txt', sep=""))
-save_fit_obj(fitv, paste(fpath, 'fitv_result.txt', sep=""))
-save_fit_obj(fits, paste(fpath, 'fits_result.txt', sep=""))
+save_fit_obj(fit, paste(fpath, 'fit_result', sep=""), 'fit')
+# save_fit_obj(fitp, paste(fpath, 'fitp_result', sep=""), 'fitp') # Takes up A LOT of memory
+save_fit_obj(fitv, paste(fpath, 'fitv_result', sep=""), 'fitv')
+source("~/Documents/OpenBT/RScripts/Walmart Example/summarize_output.R")
+save_fit_obj(fits, paste(fpath, 'fits_result', sep=""), 'fits')
 
 # Plot y vs yhat plots:
+
+
+
+
+
+
+
+
+
