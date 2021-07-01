@@ -14,6 +14,7 @@ from openbt2 import OPENBT
 sys.path.append("/home/clark/Documents/OpenBT/PyScripts/Walmart Example")
 from Construct_Walmart_Data import *
 from summarize_output import *
+from walmart_pred_plot import *
 
 # Load in the data (8 x variables, after I edited it):
 (x, y, x_pd, y_pd) = get_walmart_data()
@@ -38,6 +39,14 @@ preds_list = []; np.random.seed(88)
 # Categorical variables:
 for col in [0, 1, 2, 3]:
      preds_list.append(np.random.randint(np.min(x[:, col]), np.max(x[:, col])+1, size = npred_arr))
+
+
+
+# Separate, weighted one for holiday flag, since its mean is low?
+
+
+
+
 # Continuous variables:
 for col in [4, 5, 6, 7]:
      preds_list.append(np.random.uniform(np.min(x[:, col]), np.max(x[:, col])+2.2e-16, size = npred_arr))
@@ -59,18 +68,20 @@ fitv = m.vartivity()
 fits = m.sobol(cmdopt = 'MPI', tc = tc)
 # summarize_fits(fits)
 
-# Save objects:
+# Save fit objects:
 fpath1 = '/home/clark/Documents/OpenBT/PyScripts/Walmart Example/Results/'
 save_fit_obj(fit, f'{fpath1}fit_result.txt', objtype = 'fit')
 save_fit_obj(fitp, f'{fpath1}fitp_result.txt', objtype = 'fitp')
 save_fit_obj(fitv, f'{fpath1}fitv_result.txt', objtype = 'fitv')
 save_fit_obj(fits, f'{fpath1}fits_result.txt', objtype = 'fits')
 
-# Plot y vs yhat plots (not working yet!)
-fpath2 = '/home/clark/Documents/OpenBT/PyScripts/Walmart Example/Plots/'
-ax = fig.add_subplot(111)
-ax.plot(y, fitp, 'ro') # label=current_time can help with plot versions
-ax.set_title(f'Test Sales vs. Predicted mean response, ntree = {ntree}')
-ax.set_xlabel('Observed y'); ax.set_ylabel('Fitted y ($^{y}$')
-# plt.legend(loc='upper right')
-plt.savefig(f'{fpath2}y-vs-yhat1.png')
+
+# Plot y vs yhat plots:
+from walmart_pred_plot import *
+ys, yhats = set_up_plot(fitp, x, y, points = len(x), var = [0, 1, 3])
+# Adding in 2 (Day) thins out the pack a lot, duh! 
+# Also, maybe I should weight that sample; its mean is 0.0699.
+
+pred_plot(ys, yhats, 'BART y vs. $\hat(y)$, Full Settings',
+  '/home/clark/Documents/OpenBT/PyScripts/Plots/Walmart/7-1-21-y-yhat7',
+  ms = 0.4, lims = [0.0, 3.1])

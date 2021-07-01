@@ -49,7 +49,15 @@ print(fit_test$folder)
 # Plan: Go to the folder and view the config (which will be not-removed b/c of my source code edits)
 
 source("~/Documents/OpenBT/openbt/Ropenbt/R/openbt2.R")
-fitp_test <- predict.openbt(fit, x.test=preds_test, tc=tc)
+fitp_test <- predict.openbt(fit_test, x.test=preds_test, tc=tc)
 
 # Plot y vs yhat plots:
+# ?
 
+# Vartivity:
+fitv_test = vartivity.openbt(fit_test)
+# summarize_fitv(fitv)
+
+# Sobol:
+fits_test = sobol.openbt(fit_test, tc = tc)
+# summarize_fits(fits)

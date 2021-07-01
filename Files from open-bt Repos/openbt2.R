@@ -359,8 +359,6 @@ res=list()
 # Read in the influence metrics.
 res$influence=NULL
 for(i in 1:nslv)
-   print(i)
-   print(paste(folder,"/",modelname,".influence",i,sep=""))
    res$influence=rbind(res$influence,as.matrix(read.table(paste(folder,"/",modelname,".influence",i,sep=""))))
 colnames(res$influence)=c("MeanCookD", "MaxCookD", "KLDiv")
 res$modeltype=modeltype
@@ -473,7 +471,7 @@ if(cmdopt==100)  # serial/OpenMP
 #cmd=paste("mpirun -np ",tc," openbtpred",sep="")
 #cat(cmd)
 system(cmd)
-system(paste("rm -f ",fit$folder,"/config.pred",sep=""))
+# system(paste("rm -f ",fit$folder,"/config.pred",sep=""))
 
 
 #--------------------------------------------------
