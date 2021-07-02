@@ -109,9 +109,9 @@ chgv
 xiroot: 
 xi
 fpath: 
-/tmp/openbtpy_zh2ffh20
+/tmp/openbtpy_pnvirig9
 configfile: 
-/tmp/openbtpy_zh2ffh20/config
+/tmp/openbtpy_pnvirig9/config
 maxx: 
 [45 12 1030 1 101 5 228 15]
 minx: 

@@ -7,7 +7,7 @@ and pairs their y and y-hat values for plotting.
 import numpy as np
 import matplotlib.pyplot as plt
 
-def set_up_plot(fitp, x, y, points = 2000, var = [0, 1, 3]):
+def set_up_plot(fitp, x, y, points = 2000, var = [0, 1, 2, 3], day_range = 30):
      """
      Makes two arrays: y, and y-hat respectively, to plot. When plotted, they'll 
      show how close the fit is to predicting the correct y for a (predetermined) 
@@ -24,7 +24,12 @@ def set_up_plot(fitp, x, y, points = 2000, var = [0, 1, 3]):
           Determines how many points will be plotted - a random sample of
           length (points) of x is taken. The default is 2000.
      var : list, optional
-          Specifies which variables to match      
+          Specifies which variables to match   
+     day_range : int, optional
+          Allowance for the days variable (~1-1000) to not exactly match 
+          the x_train day number in question. i.e. any entry within (day_offset) 
+          days will be counted as a match. 25-40 seems to be a good value for this. 
+          The default is 30.
 
      Returns
      -------
@@ -41,8 +46,11 @@ def set_up_plot(fitp, x, y, points = 2000, var = [0, 1, 3]):
           # Find the matching x_train:
           good_idx = {}
           for v in var:
-              good_idx[v] = np.where(x_test[:, v] == x[idxs[i], v])[0]
-              # Add an if statement here to deal with the day column?
+              if (v != 2): # Anything but the day variable:
+                  good_idx[v] = np.where(x_test[:, v] == x[idxs[i], v])[0]   
+              else: # Day variable
+                  good_idx[v] = np.where(
+                                np.abs(x_test[:, v] - x[idxs[i], v]) <= day_range)[0]
           if (len(var) == 1):
               good_idx_tot = good_idx[var[0]]
           elif (len(var) == 2):
@@ -60,7 +68,7 @@ def set_up_plot(fitp, x, y, points = 2000, var = [0, 1, 3]):
               y2[i] = np.round(np.mean(y_test[good_idx_tot]), 2) # mean of y_tests that matched
           else:
               count = count + 1
-     # print(good_idx_tot); print(good_idx) # The last one of each; a check
+     # print(good_idx_tot); print(len(good_idx[2])) # A check (on the last iteration of the loop)
      
      print('Number of x_train rows which were not perfectly matched in x_test:', count)
      # Delete the unfilled rows with 3 steps of masking:

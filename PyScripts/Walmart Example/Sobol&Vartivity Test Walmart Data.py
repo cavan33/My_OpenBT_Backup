@@ -4,7 +4,7 @@
 Import the Walmart data and run sobol/fitv on it to see if there are differences 
 (there should be)
 """
-import numpy as np
+import numpy as np; import random
 import matplotlib.pyplot as plt
 # from sklearn import datasets, svm
 # Janky importing from openbt-python repo below: (you'll have to change this for your own machine):
@@ -37,16 +37,10 @@ nc=2000
 npred_arr = 40000 # Rows of the preds x grid
 preds_list = []; np.random.seed(88)
 # Categorical variables:
-for col in [0, 1, 2, 3]:
+for col in [0, 1, 2]:
      preds_list.append(np.random.randint(np.min(x[:, col]), np.max(x[:, col])+1, size = npred_arr))
-
-
-
-# Separate, weighted one for holiday flag, since its mean is low?
-
-
-
-
+# Separate, weighted one for holiday flag, since it's more zeros than ones:
+preds_list.append(random.choices([0, 1], weights = (1-np.mean(x[:, 3]), np.mean(x[:, 3])), k = npred_arr))    
 # Continuous variables:
 for col in [4, 5, 6, 7]:
      preds_list.append(np.random.uniform(np.min(x[:, col]), np.max(x[:, col])+2.2e-16, size = npred_arr))
@@ -77,11 +71,8 @@ save_fit_obj(fits, f'{fpath1}fits_result.txt', objtype = 'fits')
 
 
 # Plot y vs yhat plots:
-from walmart_pred_plot import *
-ys, yhats = set_up_plot(fitp, x, y, points = len(x), var = [0, 1, 3])
-# Adding in 2 (Day) thins out the pack a lot, duh! 
-# Also, maybe I should weight that sample; its mean is 0.0699.
+ys, yhats = set_up_plot(fitp, x, y, points = len(x), var = [0, 1, 2, 3], day_range = 30)
 
-pred_plot(ys, yhats, 'BART y vs. $\hat(y)$, Full Settings',
-  '/home/clark/Documents/OpenBT/PyScripts/Plots/Walmart/7-1-21-y-yhat7',
-  ms = 0.4, lims = [0.0, 3.1])
+pred_plot(ys, yhats, 'BART y vs. $\hat(y)$, Full Settings, all 4 Variables',
+  '/home/clark/Documents/OpenBT/PyScripts/Plots/Walmart/y-yhat1',
+  ms = 1.5, lims = [0.0, 3.1])
