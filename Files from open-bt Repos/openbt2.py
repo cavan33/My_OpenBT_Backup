@@ -122,10 +122,10 @@ class OPENBT(BaseEstimator):
             self.uniqy = np.unique(self.y_train) # Already sorted, btw
             if(len(self.uniqy) > 2 or self.uniqy[1] != 0 or self.uniqy[2] != 1):
                  sys.exit("Invalid y.train: Probit requires dichotomous response coded 0/1") 
-        else:
+        else: # Unused modeltypes for now, but still set their properties just in case
             self.y_train = self.y_orig 
             self.fmean_out = None
-            self.rgy = [-2, 2] # Ambiguous in R if modeltype isn't one of the above...
+            self.rgy = [-2, 2] # These proprties are ambiguous for these modeltypes by the way...
             
         self.n = self.y_train.shape[0]
         self.p = self.X_train.shape[0]

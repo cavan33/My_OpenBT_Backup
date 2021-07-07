@@ -6,7 +6,7 @@ def get_walmart_data():
      import numpy as np
      # Example - the CO2 Plume data from Assignment 3
      # Fit the model
-     walmart_pd = pd.read_csv('Documents/OpenBT/PyScripts/Walmart_Store_sales.csv')
+     walmart_pd = pd.read_csv('PyScripts/Walmart Example/Walmart_Store_sales.csv') # might vary for your filesystem
      x_pd = walmart_pd.drop(labels = "Weekly_Sales", axis = 1) # All columns except sales:
      # Store, Date, Holiday Flag, Temperature, Fuel Price, CPI, Unemployment
      y_pd = walmart_pd["Weekly_Sales"] # Weekly sales column only

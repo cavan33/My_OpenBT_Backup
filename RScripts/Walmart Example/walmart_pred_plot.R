@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # Finds the row in the x-test that has the closest variable values to the x-train data,
 # pairs their y and y-hat values for plotting, and plots.
 
@@ -88,45 +86,41 @@ set_up_plot <- function(fitp, x, y, points = 2000, var = c(0, 1, 2, 3), day_rang
      
      
      
-# pred_plot <-  function(y1, y2, title, fname, ms = 4, millions = True, lims = []){
-#        """
-#     Plots the output from the previous function.
-#     Parameters
-#     ----------
-#     y1 : numpy array
-#         AKA 'y': y_train array to plot.
-#     y2 : numpy array
-#         AKA 'y-hat': y_test array to plot.
-#     title : string
-#         Custom title of the plot
-#     fname : string
-#         File location to which to save the plot
-#     ms : int, optional
-#         markersize of points. The default is 4.
-#     millions : TYPE, optional
-#         If True, divide all y-values by a million. The default is True.
-#     lims : list, optional
-#         Specifies limits of the plot (if the defaults aren't good)   
-# 
-#     Returns
-#     -------
-#     None.
-# 
-#     """
-#      plt.rcParams['axes.labelsize'] = 18; plt.rcParams['axes.titlesize'] = 22;
-#      plt.rcParams['xtick.labelsize'] = 16; plt.rcParams['ytick.labelsize'] = 16;
-#      fig = plt.figure(figsize=(16,9))
-#      ax = fig.add_subplot(111)
-#      if millions:
-#        ax.plot(y1/1000000, y2/1000000, 'ro', markersize = ms)
-#      ax.set_xlabel('Data (y), Millions of $'); ax.set_ylabel('Predicted (yhat), Millions of $')
-#      else:
-#        ax.plot(y1, y2, 'ro', markersize = ms)
-#      ax.set_xlabel('Data (y), Millions of $'); ax.set_ylabel('Predicted (yhat), Millions of $')
-#      if(lims == []):
-#        lims = [np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
-#                np.max([ax.get_xlim(), ax.get_ylim()])]  # max of both axes
-#      ax.plot(lims, lims, 'k-', linewidth=2); ax.set_xlim(lims); ax.set_ylim(lims);
-#      ax.set_title(title)
-#      plt.savefig(fname)
-# }
+pred_plot <- function(y_df, title, fname, ms = 1, millions = TRUE, lims_df = data.frame()){
+    # Plots the output from the previous function.
+    # Parameters
+    # ----------
+    # y_df : dataframe
+    #     has 'y' and 'yhat': y_train and y_test to plot.
+    # title : string
+    #     Custom title of the plot
+    # fname : string
+    #     File location to which to save the plot
+    # ms : double, optional
+    #     size (markersize) of points. The default is 1.
+    # millions : TYPE, optional
+    #     If True, divide all y-values by a million. The default is True.
+    # lims_df : dataframe, optional
+    #     Specifies limits of the plot (if the defaults aren't good)
+    # 
+    # Returns
+    # -------
+    # None.
+    library(ggplot2)
+    if (millions) {
+      y_df$y <- y_df$y / 1000000; y_df$yhat <- y_df$yhat / 1000000;
+      x_lab <- 'Data (y), Millions of $'; y_lab <- 'Predicted (yhat), Millions of $'
+    } else {
+        x_lab <- 'Data (y), $'; y_lab <- 'Predicted (yhat), $'
+    }
+    if(length(lims_df) == 0){
+      lims_df <- data.frame("x" = c(min(y_df$y, y_df$yhat), max(y_df$y, y_df$yhat)),
+                         "y" = c(min(y_df$y, y_df$yhat), max(y_df$y, y_df$yhat)))
+    }        
+    p <- ggplot(y_df, aes(y, yhat)) +
+            geom_point(color = "red", size = ms) +
+            geom_line(lims_df, mapping = aes(x, y)) +
+            labs(x = x_lab, y = y_lab, title = title)
+    ggsave(fname, p, device = "png")
+    return(p)
+}

@@ -1,6 +1,6 @@
 get_walmart_data <- function(){
   library(lubridate)
-  walmart <- read.csv("Walmart_Store_sales.csv")
+  walmart <- read.csv("RScripts/Walmart Example/Walmart_Store_sales.csv")
   x <- subset(walmart, select = c(1,2,4,5,6,7,8))
   x$Date <- as.Date(x$Date, format = "%d-%m-%Y")
   y <- subset(walmart, select = 3)

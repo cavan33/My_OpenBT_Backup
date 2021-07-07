@@ -29,8 +29,16 @@ summarize_fits <- function(fits){
 }
 
 save_fit_obj <- function(fit, fname, objtype){
-  to_save <- data.frame(unlist(fit))
+  if (objtype != 'fitp'){
+    to_save <- data.frame(unlist(fit))
+  }
+  else {
+    drop <- c("mdraws", "sdraws")
+    temp <- fit[!(names(fit) %in% drop)]
+    to_save <- data.frame(unlist(temp))
+  }
   write.table(to_save, file = paste(fname, '.txt', sep=""), sep = "")
+ 
   if (objtype == 'fitp'){ # (Nothing needed for objtype == 'fit')
     to_save2 <- list()
     to_save2[1] <- paste("Mean(mdraws): ", toString(mean(fit$mdraws)), "\n", sep="")

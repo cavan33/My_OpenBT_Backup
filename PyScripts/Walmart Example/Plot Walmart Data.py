@@ -6,11 +6,10 @@ Import the Walmart data and plot it to visualize what it's like
 import numpy as np
 import matplotlib.pyplot as plt
 # from sklearn import datasets, svm
-# Janky importing from openbt-python repo below: (you'll have to change this for your own machine):
 import sys
-sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
+sys.path.append("openbt-python") # sys.path to check
 from openbt2 import OPENBT
-sys.path.append("/home/clark/Documents/OpenBT/PyScripts/Walmart Example")
+sys.path.append("PyScripts/Walmart Example")
 from Construct_Walmart_Data import *
 
 
@@ -20,7 +19,7 @@ from Construct_Walmart_Data import *
 # Basic plots of this:
 plt.rcParams['axes.labelsize'] = 18; plt.rcParams['axes.titlesize'] = 22;
 plt.rcParams['xtick.labelsize'] = 16; plt.rcParams['ytick.labelsize'] = 16;
-path = 'Documents/OpenBT/PyScripts/Plots/Walmart/' # Will be different for your filesystem   
+path = 'PyScripts/Plots/Walmart/' # Will be different for your filesystem   
   
 fig = plt.figure(figsize=(10,5.5)); ax = fig.add_subplot(111)
 ax.scatter(x[:, 2], y/1000000, s = 8)

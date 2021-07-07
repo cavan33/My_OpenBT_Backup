@@ -1,7 +1,7 @@
-source("~/Documents/OpenBT/RScripts/Walmart Example/Construct_Walmart_Data.R")
-source("~/Documents/OpenBT/RScripts/Walmart Example/summarize_output.R")
-source("~/Documents/OpenBT/RScripts/Walmart Example/walmart_pred_plot.R")
-source("~/Documents/OpenBT/openbt/Ropenbt/R/openbt2.R") # Make sure to use my local copy
+source("RScripts/Walmart Example/Construct_Walmart_Data.R")
+source("RScripts/Walmart Example/summarize_output.R")
+source("RScripts/Walmart Example/walmart_pred_plot.R")
+source("openbt/Ropenbt/R/openbt2.R") # Make sure to use my local copy
 # of the source code for the test of this function. this line replaces "library(Ropenbt)"
 data <- get_walmart_data()
 x <- data$x; y <- data$y
@@ -52,10 +52,7 @@ print(fit_test$folder)
 fitp_test <- predict.openbt(fit_test, x.test=preds_test, tc=tc)
 
 # Plot y vs yhat plots:
-source("~/Documents/OpenBT/RScripts/Walmart Example/walmart_pred_plot.R")
 c(ys, yhats) <- set_up_plot(fitp_test, x, y, points = 2000, var = c(1, 2, 3, 4), day_range = 30)
-
-
 
 # Vartivity:
 fitv_test = vartivity.openbt(fit_test)

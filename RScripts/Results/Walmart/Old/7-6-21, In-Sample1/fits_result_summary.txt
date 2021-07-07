@@ -1,0 +1,14 @@
+"X.Mean.vidraws...45570771876.7562.n.""X.Mean.vijdraws...2990448233.52337.n.""X.Mean.tvidraws...70475278825.0625.n.""X.Mean.vdraws...458383120600.n.""X.Mean.sidraws...0.099329281610891.n.""X.Mean.sijdraws...0.00654258434646441.n.""X.Mean.tsidraws...0.15385941591372.n.""X.Mean.msij...0.00654258434646441.n.""X.Mean.sij_sd...0.00183466258051823.n.""X.Mean.sij_5...0.00627533141397045.n.""X.Mean.sij_lower...0.00378260064934982.n.""X.Mean.sij_upper...0.010586843800951.n."
+"1""Mean(vidraws): 45570771876.7562
+""Mean(vijdraws): 2990448233.52337
+""Mean(tvidraws): 70475278825.0625
+""Mean(vdraws): 458383120600
+""Mean(sidraws): 0.099329281610891
+""Mean(sijdraws): 0.00654258434646441
+""Mean(tsidraws): 0.15385941591372
+""Mean(msij): 0.00654258434646441
+""Mean(sij_sd): 0.00183466258051823
+""Mean(sij_5): 0.00627533141397045
+""Mean(sij_lower): 0.00378260064934982
+""Mean(sij_upper): 0.010586843800951
+"

@@ -30,7 +30,6 @@ def set_up_plot(fitp, x, y, points = 2000, var = [0, 1, 2, 3], day_range = 30):
           the x_train day number in question. i.e. any entry within (day_offset) 
           days will be counted as a match. 25-40 seems to be a good value for this. 
           The default is 30.
-
      Returns
      -------
      y1, y2: y and yhat to plot
@@ -86,7 +85,7 @@ def set_up_plot(fitp, x, y, points = 2000, var = [0, 1, 2, 3], day_range = 30):
 
 def pred_plot(y1, y2, title, fname, ms = 4, millions = True, lims = []):
     """
-    Plots the output from the previous function.
+    Plots the output from the previous function (or from in-sample predictions).
     Parameters
     ----------
     y1 : numpy array
@@ -103,16 +102,13 @@ def pred_plot(y1, y2, title, fname, ms = 4, millions = True, lims = []):
         If True, divide all y-values by a million. The default is True.
     lims : list, optional
         Specifies limits of the plot (if the defaults aren't good)   
-
     Returns
     -------
     None.
-
     """
     plt.rcParams['axes.labelsize'] = 18; plt.rcParams['axes.titlesize'] = 22;
     plt.rcParams['xtick.labelsize'] = 16; plt.rcParams['ytick.labelsize'] = 16;
-    fig = plt.figure(figsize=(16,9))
-    ax = fig.add_subplot(111)
+    fig = plt.figure(figsize=(16,9)); ax = fig.add_subplot(111)
     if millions:
         ax.plot(y1/1000000, y2/1000000, 'ro', markersize = ms)
         ax.set_xlabel('Data (y), Millions of $'); ax.set_ylabel('Predicted (yhat), Millions of $')
@@ -124,4 +120,79 @@ def pred_plot(y1, y2, title, fname, ms = 4, millions = True, lims = []):
             np.max([ax.get_xlim(), ax.get_ylim()])]  # max of both axes
     ax.plot(lims, lims, 'k-', linewidth=2); ax.set_xlim(lims); ax.set_ylim(lims);
     ax.set_title(title)
+    plt.savefig(fname)
+    
+    
+    
+def vartiv_plot(fitv, title, fname, labels):
+    """
+    Plots the output of vartivity() in a boxplot: shows the proportion of
+    tree rules attributed to each variable.
+    Parameters
+    ----------
+    fitv : dictionary (fit object)
+        Contains vartivity results. Could also be changed to manually
+        inputting mvdraws from a file in the future.
+    title : string
+        Custom title of the plot.
+    fname : string
+        File location to which to save the plot.
+    labels : list
+        Labels for each boxplot on the x-axis.
+    Returns
+    -------
+    None
+    """
+    plt.rcParams['axes.labelsize'] = 18; plt.rcParams['axes.titlesize'] = 22;
+    plt.rcParams['xtick.labelsize'] = 16; plt.rcParams['ytick.labelsize'] = 16;
+    fig = plt.figure(figsize=(16,16)); ax = fig.add_subplot(111)
+    ax.boxplot(fitv['vdraws'], labels = labels)
+    ax.set_ylabel("Proportion of Tree Rules")
+    ax.set_title(title)
+    plt.savefig(fname)
+    
+    
+    
+def sobol_plot(fits, title, fname, labels, p = ['msi', 'mtsi'], ij = False):
+    """
+    Plots the output of sobol() in a boxplot: shows the proportion of
+    one-way, two-way, and/or total sobol sensitivities attributed to each variable.
+    Parameters
+    ----------
+    fits : dictionary (fit object)
+        Contains sobol results. Could also be changed to manually
+        inputting msi, msij, and/or mtsi from a file in the future.
+    title : string
+        Custom title of the plot.
+    fname : string
+        File location to which to save the plot.
+    labels : list
+        Labels for the x-axis for the non-sij plot - they correspond with variable names.
+    p : list, optional
+        Lists which sobol results to plot side-by-side: can be 1 or 2 of
+        the aforementioned results. The default is msi and mtsi.
+    ij : boolean, optional
+        If True, plot the msij's (which have a different number of pairs to plot).
+        The default is False.
+    Returns
+    -------
+    None
+    """
+    plt.rcParams['axes.labelsize'] = 18; plt.rcParams['axes.titlesize'] = 22;
+    plt.rcParams['xtick.labelsize'] = 16; plt.rcParams['ytick.labelsize'] = 16;
+    fig = plt.figure(figsize=(16,9)); ax = fig.add_subplot(111)
+    c = ['r', 'b']
+    if (ij == False):
+        sd = ['msi_sd', 'tsi_sd']; x = np.arange(len(fits['msi'])) + 1
+        for i in range(len(p)):  
+            ax.errorbar(x, fits[p[i]], yerr = fits[sd[i]], color = c[i], label = p[i])
+        ax.set_xticks(x); ax.set_xticklabels(labels)
+    else:
+        x = np.arange(len(fits['msij'])) + 1
+        ax.errorbar(x, fits['msij'], yerr = fits['sij_sd'], color = 'g', label = 'msij')
+        ax.set_xticks(x); ax.set_xticklabels(labels)
+        ax.set_xlabel("Pair of variables")
+    ax.set_ylabel("Proportion of Sobol Sensitivity")
+    ax.set_title(title)
+    ax.legend(loc = "upper right", prop={'size': 25})
     plt.savefig(fname)
