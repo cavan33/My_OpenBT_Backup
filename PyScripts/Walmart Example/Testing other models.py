@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.append("openbt-python") # sys.path to check
 from openbt2 import OPENBT
-sys.path.append("PyScripts/Walmart Example")
+sys.path.append("PyScripts/Walmart Example/Functions")
 from Construct_Walmart_Data import *
 from summarize_output import *
 from walmart_pred_plot import *

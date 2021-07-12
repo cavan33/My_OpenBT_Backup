@@ -2,7 +2,7 @@
 
 import invoke # A task execution tool; unused
 from sklearn.base import ClassifierMixin, RegressorMixin, BaseEstimator
-# Two of these aren't used yet; B.E. is the parent class of OPENBT
+# ^ Two of these aren't used yet; B.E. is the parent class of OPENBT
 import tempfile # Generate temporary directories/files
 from pathlib import Path # To write filepaths
 from collections import defaultdict # For setting dictionaries with default values; unused
@@ -536,7 +536,7 @@ class OPENBT(BaseEstimator):
              self.tsi_5 = self.tsi_5[0]
              self.tsi_lower = self.tsi_lower[0]
              self.tsi_upper = self.tsi_upper[0] 
-        # ^ Names?     
+        # ^ Names? Nah    
        
         
     def sobol(self, cmdopt = 'serial', q_lower=0.025, q_upper=0.975, tc = 4):  
@@ -586,16 +586,41 @@ class OPENBT(BaseEstimator):
         res['q_lower'] = self.q_lower; res['q_upper'] = self.q_upper;
         res['modeltype'] = self.modeltype; res['so_draws'] = self.so_draws
         return res
-   
+    
 
-# Scratch lines:
-# os.path.exists("openbtvartivity"); os.path.abspath("openbtvartivity")
 
-"""
-# Old attempt at incorportating hyperthreads (didn't quite work out):
-if self.hyperthread == True:
-     print("Using all available cores, since we need to use hyperthreads")
-     sp = subprocess.run(["mpirun", "--use-hwthread-cpus", cmd, 
-      str(self.fpath)], stdin=subprocess.DEVNULL, capture_output=True)
-else: # (Normal process run here)
-"""
+    # Save a posterior tree fit (post) from the tmp working directory
+    # into a local zip file given by [file].zip
+    # If not file option specified, uses [model name].zip as the file.
+    def save_fit(self, post, dirname = None, postname = 'post_PyData'):
+        if(type(post) != dict): sys.exit("Invalid object.\n")
+        if(dirname == None): dirname = post['modelname']
+        if(dirname[-3:] != ".obt"): dirname = dirname + ".obt"
+        import posixpath
+        fname = posixpath.split(dirname)[1]
+        files = sorted(list(self.fpath.glob("*"))) # Files to save (long names)
+        from zipfile import ZipFile; import pickle; import subprocess
+        
+        with ZipFile(dirname, 'w') as myZip:
+            # Save contents of the temp file (s1, x1, y1, etc) to a zip folder:
+            for i in range(len(files)):
+                myZip.write(files[i], posixpath.split(files[i])[1])
+            print("Saved fit files to", dirname)
+            fit_obj_name = dirname[:-4]+'_'+postname
+            with open(fit_obj_name, 'wb') as f:
+                pickle.dump(post, f)
+            myZip.write(fit_obj_name, postname)
+            subprocess.run(f"rm -f {fit_obj_name}", shell=True)
+            print("Saved posterior to", dirname)
+        myZip.close()    
+
+
+    def load_fit(self, dirname = None, postname = 'post_PyData'):  
+        if(dirname[-3:] != ".obt"): dirname = dirname + ".obt"
+        import pickle; from zipfile import ZipFile
+        with ZipFile(dirname, 'r') as myZip:
+            # print(myZip.namelist())
+            with myZip.open(postname) as myfile:
+                loaded_model = pickle.load(myfile)
+        myZip.close() 
+        return(loaded_model)

@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jun  7 14:17:11 2021
-
 @author: clark
 """
 import numpy as np
 import matplotlib.pyplot as plt
 # from sklearn import datasets, svm
-# Janky importing from openbt-python repo below: (you'll have to change this for your own machine):
 import sys
-sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
+sys.path.append("openbt-python") # os.getcwd() to check
 from openbt2 import OPENBT # I made changes to openbt.py & called it openbt2
      
 # CO2 Plume example:
@@ -28,7 +26,7 @@ tc = 4 # Default = 2, but we usually use 4
 npred_arr = 20
 
 # Load data:
-co2plume = np.loadtxt('Documents/OpenBT/PyScripts/newco2plume.txt', skiprows=1)
+co2plume = np.loadtxt('PyScripts/newco2plume.txt', skiprows=1)
 # Kinda cheated, and made the tricky .dat file into a .txt file using R
 x = co2plume[:,0:2] # Not including the 3rd column, btw
 y = co2plume[:,2]
@@ -62,7 +60,7 @@ fits13 = m13.sobol(cmdopt = 'MPI')
 
 """
 # Plot the original points and the fit on top:
-path = 'Documents/OpenBT/PyScripts/Plots/' # Will be different for your filesystem
+path = 'PyScripts/Plots/' # Will be different for your filesystem
 from mpl_toolkits.mplot3d import Axes3D
 %matplotlib qt5
 # ^ Comment this line out if not running in iPython

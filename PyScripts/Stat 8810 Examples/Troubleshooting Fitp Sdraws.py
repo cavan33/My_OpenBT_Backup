@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-The Fitp for Slides 13 Testing is not having the correct sdraws. This script attempts to figure out why.
+The Fitp for Slides 13 Testing was not having the correct sdraws. This script attempts to figure out why.
 """
 import numpy as np
-f = "/tmp/openbtpy_wiedmi8s/model."
+f = "/tmp/openbtpy_wiedmi8s/model." # Or, replace with the temp-dir for the newest run
 test0 = np.loadtxt(f+"sdraws0")
 print(test0[0])
 print(len(test0[0]))

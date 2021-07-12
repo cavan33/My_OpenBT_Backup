@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-From this example: http://www.matthewpratola.com/teaching/stat8810-fall-2017/,
+Derived from this example: http://www.matthewpratola.com/teaching/stat8810-fall-2017/,
 Slides 11 Code. It uses the BayesTree package, but it's similar to using OpenBT.
 
 This script replicates the OpenBT fit behavior using Python. I took functions from
@@ -11,16 +11,14 @@ to how I wanted to set some more parameters.
 import numpy as np
 import matplotlib.pyplot as plt
 # from sklearn import datasets, svm
-# Janky importing from openbt-python repo (you'll have to change this for your own machine):
 import sys
-sys.path.append("/home/clark/Documents/OpenBT/openbt-python") # os.getcwd() to check
+sys.path.append("openbt-python")
 from openbt2 import OPENBT # I made changes to openbt.py & called it openbt2
-sys.path.append("/home/clark/Documents/OpenBT/PyScripts/Stat 8810 Examples/")
-from gen_data11 import *
+sys.path.append("PyScripts/Stat 8810 Examples/Functions")
+from gen_data8810 import *
 # Example (Our usual GP realization) originally using BayesTree, 
 # now written in Python with openbt-python.
 design, y = gen_data()
-
 
 # Now, set up the fit:
 # Set values to be used in the fitting/predicting:
@@ -48,7 +46,7 @@ npreds = 100 # Default = 100
 fig = plt.figure(figsize=(10,5.5))
 plt.rcParams['axes.labelsize'] = 18; plt.rcParams['axes.titlesize'] = 22;
 plt.rcParams['xtick.labelsize'] = 16; plt.rcParams['ytick.labelsize'] = 16;
-path = 'Documents/OpenBT/PyScripts/Plots/' # Will be different for your filesystem
+path = 'PyScripts/Plots/' # Might be different for your filesystem
 fname = 'Slides11_testing.png'
 #---------------------------------------------------------------------------------------
 def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree,
@@ -90,6 +88,10 @@ def fit_pipeline(design, y, model, ndpost, nskip, power, base, tc, numcut, ntree
                power=beta, base=alpha, tc=tc, numcut=nc, ntree=ntree,
                ntreeh=ntreeh, k=k, overallsd=shat, overallnu=nu,
                npreds=npreds, fig=fig, path=path, fname=fname)
+from openbt2 import OPENBT
+m11.save_fit(fit11, "PyScripts/Results/Stat_8810/save_fit11")
+fit11_2 = m11.load_fit("PyScripts/Results/Stat_8810/save_fit11") # Testing the load() and save()
+
 # plt.clf()
 
 fitv11 = m11.vartivity()
@@ -97,8 +99,3 @@ fitv11 = m11.vartivity()
 
 # summarize_fitp(fitp11)
 # summarize_fitv(fitv11)
-
-"""
-thingy = np.arange(8.0)
-np.array_split(thingy, 0)
-"""
