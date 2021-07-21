@@ -1,6 +1,7 @@
-# Here is the code I used to import things after a fresh R and RStudio install.
+# Here is the code I used to import things after a fresh R and RStudio install (or update).
 # Also, I included my current system for changing working directories depending
-# on if I'm doing research work or Stat 5730 work.
+# on if I'm doing research work or Stat 5730 work. This could be done with projects, 
+# but I'm not bothering with that.
 
 
 install.packages("remotes", dependencies=T)

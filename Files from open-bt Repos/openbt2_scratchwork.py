@@ -1,4 +1,4 @@
-# Designed to go inside the OPENBT class
+# mopareto function: Designed to go inside the OPENBT class, but axed b/c Dr. Pratola said it wasn't vital.
 def mopareto(self, cmdopt = 'serial', fit1=None, fit2=None, fit3=None, q_lower=0.025, q_upper=0.975, tc = 4):  
         """ Pareto Front Multiobjective Optimization using 2 fitted BART models
         """
@@ -107,3 +107,33 @@ def mopareto(self, cmdopt = 'serial', fit1=None, fit2=None, fit3=None, q_lower=0
         res = {}
         return res
 """
+
+
+# Old save_(est)obj function attempt (unncessarily complicated!):
+# Designed to go OUTSIDE of the OPENBT class, since it doesn't need an 
+# estimator object to run.
+# Note: This is only the body code (IDK what exactly the parameters were)
+""" 
+        properties = list(filter(lambda x: not(x.startswith('_')), dir(self)))
+        temp = {} # Things to save
+        for p in range(len(properties)):
+            temp[p] = eval(f"self.{properties[p]}")
+            
+        # Save properties of the fit object to a tempfile:
+        temp_file = Path(self.fpath / "/temp")
+        with temp_file.open("w") as tfile:
+            for p in temp:
+                tfile.write(str(param)+"\n")
+                    
+        # Now zip all those files:            
+        from zipfile import ZipFile; import pickle; import subprocess
+        with ZipFile(dirname, 'w') as myZip:
+            # Save properties of the fit object to a zip folder:
+            for p in range(len(to_save)):
+                print(to_save[p])
+                print(type(properties[p]))
+                myZip.write(to_save[p], properties[p])
+                print("Wrote item {p}")
+            print("Saved fit object files to", dirname)
+        myZip.close()
+    """

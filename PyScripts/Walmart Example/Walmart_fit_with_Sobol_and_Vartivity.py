@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Import the Walmart data and run sobol/fitv on it to observe and plot their differences
+Import the Walmart data and run sobol/fitv on it to observe and plot their differences.
 """
 import numpy as np; import random
 import matplotlib.pyplot as plt
