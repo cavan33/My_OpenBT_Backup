@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+// ^ Not necessary for Python but should still be declared to avoid name collisions 
+// in the Protocol Buffers namespace and non-Python languages
+package openbt_proto1;
+
+// Style guide prefers prefixing enum values instead of surrounding
+// with an enclosing message
+enum Model { // simple listing of possible values for the variable
+    dummy = 0; // to solve a weird error where it wanted 0 to be used
+    bt = 1;
+    binomial = 2;
+    poisson = 3;
+    bart = 4;
+    hbart = 5;
+    probit = 6;
+    modifiedprobit = 7;
+    merck_truncated = 8;
+}
+
+message fit { // This is the fit object
+    repeated int32 ndpost = 1; // This isn't the value, it's just the allocation!
+    repeated int32 nskip = 2; // Note: repeated is a stand-in for "required", which is dangerous
+    repeated int32 nadapt = 3;
+    repeated int32 power = 4;
+    repeated int32 base = 5;
+    // and so on (see openbt2 class for full list of variables to initialize)
+    repeated Model model = 15;
+      
+}
+    
+message fitp { // fitp object
+   repeated int32 ndpost = 1;
+}    
+
+
+// Important question for structuring this file: Is message OPENBT needed???
+
+// To generate the class, run this in the terminal:
+// protoc -I=. --python_out=. ./OpenBT.proto

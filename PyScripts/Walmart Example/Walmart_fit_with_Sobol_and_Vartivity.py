@@ -65,7 +65,7 @@ fits = m.sobol(cmdopt = 'MPI', tc = tc)
 # summarize_fits(fits)
 
 # Save the results of fits as easily-viewable text files:
-fpath1 = 'PyScripts/Results/Walmart Example/'
+fpath1 = 'PyScripts/Results/Walmart/'
 save_fit_txt(fit, f'{fpath1}fit_result.txt', objtype = 'fit')
 save_fit_txt(fitp, f'{fpath1}fitp_result.txt', objtype = 'fitp')
 save_fit_txt(fitv, f'{fpath1}fitv_result.txt', objtype = 'fitv')
